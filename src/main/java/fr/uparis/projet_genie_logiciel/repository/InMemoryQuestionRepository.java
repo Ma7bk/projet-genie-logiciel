@@ -1,6 +1,6 @@
 package fr.uparis.projet_genie_logiciel.repository;
 
-package fr.uparis.projet_genie_logiciel.entity.Question;
+import fr.uparis.projet_genie_logiciel.entity.Question;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

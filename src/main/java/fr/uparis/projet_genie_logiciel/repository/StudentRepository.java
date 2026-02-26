@@ -1,6 +1,6 @@
 package fr.uparis.projet_genie_logiciel.repository;
 
-import fr.uparis.projet_genie_logiciel.quiz.entity.Student;
+import fr.uparis.projet_genie_logiciel.entity.Student;
 import java.util.List;
 
 /**

@@ -1,4 +1,4 @@
-package package fr.uparis.projet_genie_logiciel.service;
+package fr.uparis.projet_genie_logiciel.service;
 
 import fr.uparis.projet_genie_logiciel.entity.Question;
 import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;

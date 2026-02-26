@@ -18,7 +18,7 @@ import java.util.Map;
  * Classe Main de test 
  * Permet de tester l'architecture en couches et les opérations de base
  */
-public class Main {
+public class App {
     
     public static void main(String[] args) {
         System.out.println("=== DÉMARRAGE DES TESTS DU SYSTÈME DE QUIZ ===\n");

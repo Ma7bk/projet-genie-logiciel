@@ -8,14 +8,10 @@ public class Student {
     private final String firstName;
     private final String lastName;
     private final String email;
-<<<<<<< HEAD
     private final String classe; 
 
    
-=======
-    private final String classe; // Classe de l'étudiant
 
->>>>>>> main
     public Student(String id, String firstName, String lastName, String email, String classe) {
 
         if (id == null || id.trim().isEmpty()) {

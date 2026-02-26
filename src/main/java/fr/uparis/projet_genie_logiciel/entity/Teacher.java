@@ -1,4 +1,4 @@
-package fr.uparis.projet_genie_logiciel.quiz.entity;
+package fr.uparis.projet_genie_logiciel.entity;
 
 import java.util.Objects;
 

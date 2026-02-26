@@ -1,4 +1,4 @@
-package package fr.uparis.projet_genie_logiciel.entity;
+package fr.uparis.projet_genie_logiciel.entity;
 
 import java.util.ArrayList;
 import java.util.List;
