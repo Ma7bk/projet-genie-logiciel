@@ -1,69 +1,65 @@
 package fr.uparis.projet_genie_logiciel.service;
 
-import fr.uparis.projet_genie_logiciel.entity.Question;
-import fr.uparis.projet_genie_logiciel.entity.Quiz;
-import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;
+import fr.uparis.projet_genie_logiciel.entity.*;
 import fr.uparis.projet_genie_logiciel.repository.QuizRepository;
+import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-/**
- * Service métier pour la gestion des quiz
 
- */
 public class QuizService {
-    
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
-    
-   
+
     public QuizService(QuizRepository quizRepository, QuestionRepository questionRepository) {
-        if (quizRepository == null) {
-            throw new IllegalArgumentException("Le quizRepository ne peut pas être null");
-        }
-        if (questionRepository == null) {
-            throw new IllegalArgumentException("Le questionRepository ne peut pas être null");
+        if (quizRepository == null || questionRepository == null) {
+            throw new IllegalArgumentException("Les repositories ne peuvent pas être null");
         }
         this.quizRepository = quizRepository;
         this.questionRepository = questionRepository;
     }
-    
-    
-    public void createQuiz(String id, String title, String course, 
-                          List<String> questionIds, int duration) {
 
+    
+    public Quiz createQuizByTeacher(Teacher teacher, String id, String title, String course, int duration) {
+        if (teacher == null) throw new IllegalArgumentException("L'enseignant ne peut pas être null");
         if (quizRepository.findById(id) != null) {
             throw new IllegalStateException("Un quiz avec l'ID '" + id + "' existe déjà");
         }
-        
+        Quiz quiz = teacher.createQuiz(id, title, course, duration);
+        quizRepository.save(quiz);
+        return quiz;
+    }
 
-        for (String questionId : questionIds) {
-            if (questionRepository.findById(questionId) == null) {
-                throw new IllegalArgumentException("La question avec l'ID '" + questionId + "' n'existe pas");
+    
+    public Score takeQuizByStudent(Student student, Quiz quiz, List<Choice> answers) {
+        if (student == null || quiz == null || answers == null) {
+            throw new IllegalArgumentException("Les paramètres ne peuvent pas être null");
+        }
+
+        student.startQuiz(quiz);
+        Score score = new Score(quiz);
+        List<Question> questions = quiz.getQuestions();
+
+        for (int i = 0; i < Math.min(questions.size(), answers.size()); i++) {
+            Question q = questions.get(i);
+            Choice c = answers.get(i);
+            student.submitAnswer(q, c);
+            if (q.checkAnswer(c)) {
+                score.addPoint();
             }
         }
-        
 
-        List<Question> questions = getQuestionsForQuiz(questionIds);
-        boolean allSameCourse = questions.stream()
-                .allMatch(q -> q.getCourse().equalsIgnoreCase(course));
-        
-        if (!allSameCourse) {
-            throw new IllegalArgumentException("Toutes les questions doivent appartenir au cours : " + course);
-        }
-        
-
-        Quiz quiz = new Quiz(id, title, course, questionIds, duration);
-        quizRepository.save(quiz);
+        student.addScoreToHistory(score);
+        student.viewScore(score);
+        return score;
     }
-    
-   
+
+    // Méthodes TP5
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
     }
-    
-    
+
     public Quiz getQuizById(String id) {
         Quiz quiz = quizRepository.findById(id);
         if (quiz == null) {
@@ -71,90 +67,21 @@ public class QuizService {
         }
         return quiz;
     }
-    
-    
+
     public void deleteQuiz(String id) {
         if (quizRepository.findById(id) == null) {
             throw new IllegalArgumentException("Impossible de supprimer : quiz non trouvé avec l'ID " + id);
         }
         quizRepository.delete(id);
     }
-    
-    
+
     public List<Quiz> getQuizzesByCourse(String course) {
         if (course == null || course.trim().isEmpty()) {
             throw new IllegalArgumentException("Le nom du cours ne peut pas être vide");
         }
         return quizRepository.findByCourse(course);
     }
-    
-    
-    public List<Question> getQuestionsForQuiz(String quizId) {
-        Quiz quiz = getQuizById(quizId);
-        return getQuestionsForQuiz(quiz.getQuestionIds());
-    }
-    
-    
-    private List<Question> getQuestionsForQuiz(List<String> questionIds) {
-        List<Question> questions = new ArrayList<>();
-        for (String questionId : questionIds) {
-            Question question = questionRepository.findById(questionId);
-            if (question != null) {
-                questions.add(question);
-            }
-        }
-        return questions;
-    }
-    
-    
-    public double calculateScore(String quizId, java.util.Map<String, String> answers) {
-        List<Question> questions = getQuestionsForQuiz(quizId);
-        
-        if (questions.isEmpty()) {
-            return 0.0;
-        }
-        
-        int correctAnswers = 0;
-        for (Question question : questions) {
-            String studentAnswer = answers.get(question.getId());
-            if (studentAnswer != null && question.isCorrectAnswer(studentAnswer)) {
-                correctAnswers++;
-            }
-        }
-        
-        return (correctAnswers * 100.0) / questions.size();
-    }
-    
-    
-    public void addQuestionToQuiz(String quizId, String questionId) {
-        Quiz quiz = getQuizById(quizId);
-        
 
-        Question question = questionRepository.findById(questionId);
-        if (question == null) {
-            throw new IllegalArgumentException("La question avec l'ID '" + questionId + "' n'existe pas");
-        }
-        
-
-        if (!question.getCourse().equalsIgnoreCase(quiz.getCourse())) {
-            throw new IllegalArgumentException("La question doit appartenir au cours : " + quiz.getCourse());
-        }
-        
-
-        if (quiz.getQuestionIds().contains(questionId)) {
-            throw new IllegalStateException("La question est déjà dans ce quiz");
-        }
-        
-
-        List<String> newQuestionIds = new ArrayList<>(quiz.getQuestionIds());
-        newQuestionIds.add(questionId);
-        
-        Quiz updatedQuiz = new Quiz(quiz.getId(), quiz.getTitle(), quiz.getCourse(), 
-                                    newQuestionIds, quiz.getDuration());
-        quizRepository.save(updatedQuiz);
-    }
-    
-    
     public int getTotalQuizCount() {
         return quizRepository.count();
     }
