@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Implémentation en mémoire du repository pour les questions 
+ */
 public class InMemoryQuestionRepository implements QuestionRepository {
     
-
     private final List<Question> questions;
     
-  
     public InMemoryQuestionRepository() {
         this.questions = new ArrayList<>();
     }
@@ -22,19 +22,12 @@ public class InMemoryQuestionRepository implements QuestionRepository {
             throw new IllegalArgumentException("La question ne peut pas être null");
         }
         
-
-        Question existing = findById(question.getId());
-        if (existing != null) {
-
-            delete(question.getId());
-        }
-        
+        delete(question.getId());
         questions.add(question);
     }
     
     @Override
     public List<Question> findAll() {
-
         return new ArrayList<>(questions);
     }
     
@@ -67,17 +60,6 @@ public class InMemoryQuestionRepository implements QuestionRepository {
         
         return questions.stream()
                 .filter(q -> q.getCourse().equalsIgnoreCase(course))
-                .collect(Collectors.toList());
-    }
-    
-    @Override
-    public List<Question> findByType(String type) {
-        if (type == null || type.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        
-        return questions.stream()
-                .filter(q -> q.getType().equalsIgnoreCase(type))
                 .collect(Collectors.toList());
     }
     
