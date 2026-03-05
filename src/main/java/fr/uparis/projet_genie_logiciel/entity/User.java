@@ -1,8 +1,6 @@
 package fr.uparis.projet_genie_logiciel.entity;
 
-/**
- * Classe abstraite User selon le diagramme UML
- */
+
 public abstract class User {
     private final String id;
 
