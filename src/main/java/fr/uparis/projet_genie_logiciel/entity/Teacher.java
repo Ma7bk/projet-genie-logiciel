@@ -3,51 +3,29 @@ package fr.uparis.projet_genie_logiciel.entity;
 import java.util.Objects;
 
 
-public class Teacher {
-    private final String id;
+ /* Entité Teacher selon le diagramme UML */
+public class Teacher extends User {
     private final String firstName;
     private final String lastName;
     private final String email;
-    private final String subject; // Matière enseignée
+    private final String subject;
 
-  
     public Teacher(String id, String firstName, String lastName, String email, String subject) {
-
-        if (id == null || id.trim().isEmpty()) {
-            throw new IllegalArgumentException("L'ID de l'enseignant ne peut pas être vide");
-        }
+        super(id != null ? id.trim() : null);
         
-
         if (firstName == null || firstName.trim().isEmpty()) {
             throw new IllegalArgumentException("Le prénom ne peut pas être vide");
         }
-        if (firstName.length() < 2) {
-            throw new IllegalArgumentException("Le prénom doit contenir au moins 2 caractères");
-        }
-        
-
         if (lastName == null || lastName.trim().isEmpty()) {
             throw new IllegalArgumentException("Le nom ne peut pas être vide");
         }
-        if (lastName.length() < 2) {
-            throw new IllegalArgumentException("Le nom doit contenir au moins 2 caractères");
+        if (email == null || !email.contains("@")) {
+            throw new IllegalArgumentException("Email invalide");
         }
-        
-
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("L'email ne peut pas être vide");
-        }
-        if (!email.contains("@") || !email.contains(".")) {
-            throw new IllegalArgumentException("Format d'email invalide");
-        }
-        
-
         if (subject == null || subject.trim().isEmpty()) {
-            throw new IllegalArgumentException("La matière enseignée ne peut pas être vide");
+            throw new IllegalArgumentException("La matière ne peut pas être vide");
         }
-        
 
-        this.id = id.trim();
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email.trim().toLowerCase();
@@ -55,50 +33,39 @@ public class Teacher {
     }
 
 
-    public String getId() {
-        return id;
+    public Quiz createQuiz(String id, String title, String course, int duration) {
+        return new Quiz(id, title, course, duration);
     }
 
-    public String getFirstName() {
-        return firstName;
+    public void addQuestion(Quiz quiz, Question question) {
+        if (quiz != null && question != null) {
+            quiz.addQuestion(question);
+        }
     }
 
-    public String getLastName() {
-        return lastName;
+    public void defineCorrectAnswer(Choice choice) {
+        if (choice != null) {
+            System.out.println("Réponse correcte définie : " + choice.getText());
+        }
     }
 
-    public String getEmail() {
-        return email;
-    }
 
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+    public String getEmail() { return email; }
+    public String getSubject() { return subject; }
+    public String getFullName() { return firstName + " " + lastName; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Teacher teacher = (Teacher) o;
-        return Objects.equals(id, teacher.id);
+        return Objects.equals(getId(), teacher.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Teacher{" +
-                "id='" + id + '\'' +
-                ", fullName='" + getFullName() + '\'' +
-                ", email='" + email + '\'' +
-                ", subject='" + subject + '\'' +
-                '}';
+        return Objects.hash(getId());
     }
 }
