@@ -3,48 +3,27 @@ package fr.uparis.projet_genie_logiciel.repository;
 import fr.uparis.projet_genie_logiciel.entity.Quiz;
 import java.util.List;
 
-/**
- * Interface du repository pour les quiz
- * Définit les opérations CRUD de base 
+/*
+  cet interface définit les opérations pour gérer les quiz.
+  Elle sert d'intermédiaire entre l'application et le stockage des données.
  */
 public interface QuizRepository {
-    
-    /**
-     * Sauvegarde un quiz
-     * @param quiz le quiz à sauvegarder
-     */
+
+    // Enregistre un quiz dans le système
     void save(Quiz quiz);
-    
-    /**
-     * Récupère tous les quiz
-     * @return liste de tous les quiz
-     */
+
+    // Retourne la liste de tous les quiz
     List<Quiz> findAll();
-    
-    /**
-     * Recherche un quiz par son ID
-     * @param id l'ID du quiz
-     * @return le quiz trouvé ou null si non trouvé
-     */
+
+    // Cherche un quiz à partir de son identifiant
     Quiz findById(String id);
-    
-    /**
-     * Supprime un quiz par son ID
-     * @param id l'ID du quiz à supprimer
-     * @return true si la suppression a réussi, false sinon
-     */
+
+    // Supprime un quiz grâce à son identifiant
     boolean delete(String id);
-    
-    /**
-     * Recherche des quiz par cours
-     * @param course le nom du cours
-     * @return liste des quiz du cours
-     */
+
+    // Récupère les quiz associés à un cours donné
     List<Quiz> findByCourse(String course);
-    
-    /**
-     * Compte le nombre total de quiz
-     * @return le nombre de quiz
-     */
+
+    // Retourne le nombre total de quiz
     int count();
 }
