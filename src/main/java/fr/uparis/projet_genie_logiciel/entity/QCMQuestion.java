@@ -12,7 +12,7 @@ public class QCMQuestion extends Question {
         if (choice == null) {
             throw new IllegalArgumentException("Le choix ne peut pas être null");
         }
-        if (choices.size() >= 6 || choices.size() < 2) {
+        if (choices.size() >= 6 ) {
             throw new IllegalStateException("Une question QCM doit avoir entre 2 et 6 choix");
         }
         choices.add(choice);
