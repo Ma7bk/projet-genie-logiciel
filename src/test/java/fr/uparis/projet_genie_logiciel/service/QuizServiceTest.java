@@ -61,7 +61,9 @@ class QuizServiceTest {
         
         QCMQuestion q1 = new QCMQuestion("QU1", "Question 1", "Java");
         Choice c1 = new Choice("Correct", true);
+
         q1.addChoice(c1);
+
         quiz.addQuestion(q1);
 
         List<Choice> answers = Arrays.asList(c1);
