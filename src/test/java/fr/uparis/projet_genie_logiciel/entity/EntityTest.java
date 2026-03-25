@@ -151,7 +151,7 @@ class EntityTest {
         TrueFalseQuestion tf = new TrueFalseQuestion("QU4", "Test ?", "Sciences", true);
         tf.generateChoices(false); 
         assertEquals(2, tf.getChoices().size());
-        assertTrue(tf.getChoices().get(1).isCorrectAnswer()); // "Faux" est correct
+        assertTrue(tf.getChoices().get(1).isCorrectAnswer()); 
     }
 
 
@@ -306,7 +306,7 @@ class EntityTest {
         Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
         Choice c = new Choice("Paris", true);
         assertDoesNotThrow(() -> t.defineCorrectAnswer(c));
-        assertDoesNotThrow(() -> t.defineCorrectAnswer(null)); // ne doit pas planter
+        assertDoesNotThrow(() -> t.defineCorrectAnswer(null)); 
     }
 
     @Test
