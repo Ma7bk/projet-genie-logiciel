@@ -1,68 +1,45 @@
 package fr.uparis.projet_genie_logiciel.service;
-
 import fr.uparis.projet_genie_logiciel.entity.Student;
 import fr.uparis.projet_genie_logiciel.repository.StudentRepository;
 import java.util.List;
-
-
 public class StudentService {
-    private final StudentRepository studentRepository;
-
-    public StudentService(StudentRepository studentRepository) {
-        if (studentRepository == null) {
-            throw new IllegalArgumentException("Le repository ne peut pas être null");
-        }
-        this.studentRepository = studentRepository;
+    private final StudentRepository repo;
+    public StudentService(StudentRepository repo) {
+        if (repo == null) { throw new IllegalArgumentException("Repository null"); }
+        this.repo = repo;
     }
-
-    
-    public void createStudent(String id, String firstName, String lastName, String email, String classe) {
-        if (studentRepository.findById(id) != null) {
-            throw new IllegalStateException("Un étudiant avec l'ID '" + id + "' existe déjà");
+    public void createStudent(String id, String firstName, String lastName,
+                               String email, String classe, String password) {
+        if (repo.findById(id) != null) {
+            throw new IllegalStateException("Etudiant avec ID '" + id + "' existe deja");
         }
-        if (studentRepository.findByEmail(email) != null) {
-            throw new IllegalStateException("Un étudiant avec l'email '" + email + "' existe déjà");
+        if (repo.findByEmail(email) != null) {
+            throw new IllegalStateException("Etudiant avec email '" + email + "' existe deja");
         }
-        Student student = new Student(id, firstName, lastName, email, classe);
-        studentRepository.save(student);
+        repo.save(new Student(id, firstName, lastName, email, classe, password));
     }
-
-
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
-    }
-
+    public List<Student> getAllStudents() { return repo.findAll(); }
     public Student getStudentById(String id) {
-        Student student = studentRepository.findById(id);
-        if (student == null) {
-            throw new IllegalArgumentException("Étudiant non trouvé avec l'ID : " + id);
-        }
-        return student;
+        Student s = repo.findById(id);
+        if (s == null) { throw new IllegalArgumentException("Etudiant non trouve : " + id); }
+        return s;
     }
-
     public Student getStudentByEmail(String email) {
-        Student student = studentRepository.findByEmail(email);
-        if (student == null) {
-            throw new IllegalArgumentException("Étudiant non trouvé avec l'email : " + email);
-        }
-        return student;
+        Student s = repo.findByEmail(email);
+        if (s == null) { throw new IllegalArgumentException("Etudiant non trouve : " + email); }
+        return s;
     }
-
     public List<Student> getStudentsByClasse(String classe) {
         if (classe == null || classe.trim().isEmpty()) {
-            throw new IllegalArgumentException("La classe ne peut pas être vide");
+            throw new IllegalArgumentException("La classe ne peut pas etre vide");
         }
-        return studentRepository.findByClasse(classe);
+        return repo.findByClasse(classe);
     }
-
     public void deleteStudent(String id) {
-        if (studentRepository.findById(id) == null) {
-            throw new IllegalArgumentException("Impossible de supprimer : étudiant non trouvé avec l'ID " + id);
+        if (repo.findById(id) == null) {
+            throw new IllegalArgumentException("Etudiant non trouve : " + id);
         }
-        studentRepository.delete(id);
+        repo.delete(id);
     }
-
-    public int getTotalStudentCount() {
-        return studentRepository.count();
-    }
+    public int getTotalStudentCount() { return repo.count(); }
 }

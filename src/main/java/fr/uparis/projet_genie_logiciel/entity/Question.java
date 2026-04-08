@@ -13,58 +13,37 @@ public abstract class Question {
 
     public Question(String id, String text, String course) {
         if (id == null || id.trim().isEmpty()) {
-            throw new IllegalArgumentException("L'ID de la question ne peut pas être vide");
+            throw new IllegalArgumentException("L'ID de la question ne peut pas etre vide");
         }
         if (text == null || text.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le texte de la question ne peut pas être vide");
+            throw new IllegalArgumentException("Le texte ne peut pas etre vide");
         }
         if (course == null || course.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le cours associé est obligatoire");
+            throw new IllegalArgumentException("Le cours ne peut pas etre vide");
         }
-
         this.id = id.trim();
         this.text = text.trim();
         this.course = course.trim();
         this.choices = new ArrayList<>();
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getCourse() {
-        return course;
-    }
-
-    public List<Choice> getChoices() {
-        return new ArrayList<>(choices);
-    }
+    public String getId() { return id; }
+    public String getText() { return text; }
+    public String getCourse() { return course; }
+    public List<Choice> getChoices() { return new ArrayList<>(choices); }
 
     public boolean checkAnswer(Choice choice) {
-        if (choice == null) {
-            return false;
-        }
+        if (choice == null) { return false; }
         return choice.isCorrectAnswer();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Question question = (Question) o;
-        return Objects.equals(id, question.id);
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        return Objects.equals(id, ((Question) o).id);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    public int hashCode() { return Objects.hash(id); }
 }

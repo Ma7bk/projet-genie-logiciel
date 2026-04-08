@@ -1,68 +1,45 @@
 package fr.uparis.projet_genie_logiciel.service;
-
 import fr.uparis.projet_genie_logiciel.entity.Teacher;
 import fr.uparis.projet_genie_logiciel.repository.TeacherRepository;
 import java.util.List;
-
-
 public class TeacherService {
-    private final TeacherRepository teacherRepository;
-
-    public TeacherService(TeacherRepository teacherRepository) {
-        if (teacherRepository == null) {
-            throw new IllegalArgumentException("Le repository ne peut pas être null");
-        }
-        this.teacherRepository = teacherRepository;
+    private final TeacherRepository repo;
+    public TeacherService(TeacherRepository repo) {
+        if (repo == null) { throw new IllegalArgumentException("Repository null"); }
+        this.repo = repo;
     }
-
-    
-    public void createTeacher(String id, String firstName, String lastName, String email, String subject) {
-        if (teacherRepository.findById(id) != null) {
-            throw new IllegalStateException("Un enseignant avec l'ID '" + id + "' existe déjà");
+    public void createTeacher(String id, String firstName, String lastName,
+                               String email, String subject, String password) {
+        if (repo.findById(id) != null) {
+            throw new IllegalStateException("Enseignant avec ID '" + id + "' existe deja");
         }
-        if (teacherRepository.findByEmail(email) != null) {
-            throw new IllegalStateException("Un enseignant avec l'email '" + email + "' existe déjà");
+        if (repo.findByEmail(email) != null) {
+            throw new IllegalStateException("Enseignant avec email '" + email + "' existe deja");
         }
-        Teacher teacher = new Teacher(id, firstName, lastName, email, subject);
-        teacherRepository.save(teacher);
+        repo.save(new Teacher(id, firstName, lastName, email, subject, password));
     }
-
-
-    public List<Teacher> getAllTeachers() {
-        return teacherRepository.findAll();
-    }
-
+    public List<Teacher> getAllTeachers() { return repo.findAll(); }
     public Teacher getTeacherById(String id) {
-        Teacher teacher = teacherRepository.findById(id);
-        if (teacher == null) {
-            throw new IllegalArgumentException("Enseignant non trouvé avec l'ID : " + id);
-        }
-        return teacher;
+        Teacher t = repo.findById(id);
+        if (t == null) { throw new IllegalArgumentException("Enseignant non trouve : " + id); }
+        return t;
     }
-
     public Teacher getTeacherByEmail(String email) {
-        Teacher teacher = teacherRepository.findByEmail(email);
-        if (teacher == null) {
-            throw new IllegalArgumentException("Enseignant non trouvé avec l'email : " + email);
-        }
-        return teacher;
+        Teacher t = repo.findByEmail(email);
+        if (t == null) { throw new IllegalArgumentException("Enseignant non trouve : " + email); }
+        return t;
     }
-
     public List<Teacher> getTeachersBySubject(String subject) {
         if (subject == null || subject.trim().isEmpty()) {
-            throw new IllegalArgumentException("La matière ne peut pas être vide");
+            throw new IllegalArgumentException("La matiere ne peut pas etre vide");
         }
-        return teacherRepository.findBySubject(subject);
+        return repo.findBySubject(subject);
     }
-
     public void deleteTeacher(String id) {
-        if (teacherRepository.findById(id) == null) {
-            throw new IllegalArgumentException("Impossible de supprimer : enseignant non trouvé avec l'ID " + id);
+        if (repo.findById(id) == null) {
+            throw new IllegalArgumentException("Enseignant non trouve : " + id);
         }
-        teacherRepository.delete(id);
+        repo.delete(id);
     }
-
-    public int getTotalTeacherCount() {
-        return teacherRepository.count();
-    }
+    public int getTotalTeacherCount() { return repo.count(); }
 }

@@ -7,28 +7,18 @@ public class Score {
 
     public Score(Quiz quiz) {
         if (quiz == null) {
-            throw new IllegalArgumentException("Le quiz ne peut pas être null");
+            throw new IllegalArgumentException("Le quiz ne peut pas etre null");
         }
         this.quiz = quiz;
         this.value = 0;
     }
 
-    
-    public void addPoint() {
-        this.value++;
-    }
+    public void addPoint() { this.value++; }
+    public int getValue() { return value; }
+    public Quiz getQuiz() { return quiz; }
 
-    
-    public int getValue() {
-        return value;
-    }
-
-    
     public String display() {
-        return "Score pour le quiz '" + quiz.getTitle() + "' : " + value + "/" + quiz.getQuestions().size();
-    }
-
-    public Quiz getQuiz() {
-        return quiz;
+        return "Quiz '" + quiz.getTitle() + "' : "
+            + value + "/" + quiz.getQuestions().size();
     }
 }

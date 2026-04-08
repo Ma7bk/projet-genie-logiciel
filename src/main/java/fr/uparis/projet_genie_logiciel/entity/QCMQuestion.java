@@ -1,5 +1,6 @@
 package fr.uparis.projet_genie_logiciel.entity;
 
+
 public class QCMQuestion extends Question {
 
     public QCMQuestion(String id, String text, String course) {
@@ -8,13 +9,11 @@ public class QCMQuestion extends Question {
 
     public void addChoice(Choice choice) {
         if (choice == null) {
-            throw new IllegalArgumentException("Le choix ne peut pas être null");
+            throw new IllegalArgumentException("Le choix ne peut pas etre null");
         }
-
         if (choices.size() >= 6) {
-            throw new IllegalStateException("Une question QCM ne peut pas avoir plus de 6 choix");
+            throw new IllegalStateException("Maximum 6 choix par question QCM");
         }
-
         choices.add(choice);
     }
 
@@ -24,4 +23,3 @@ public class QCMQuestion extends Question {
         }
     }
 }
-

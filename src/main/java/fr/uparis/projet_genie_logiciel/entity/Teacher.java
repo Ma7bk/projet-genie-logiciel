@@ -9,22 +9,21 @@ public class Teacher extends User {
     private final String email;
     private final String subject;
 
-    public Teacher(String id, String firstName, String lastName, String email, String subject) {
-        super(id != null ? id.trim() : null);
-
+    public Teacher(String id, String firstName, String lastName,
+                   String email, String subject, String password) {
+        super(id != null ? id.trim() : null, password);
         if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le prénom ne peut pas être vide");
+            throw new IllegalArgumentException("Le prenom ne peut pas etre vide");
         }
         if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le nom ne peut pas être vide");
+            throw new IllegalArgumentException("Le nom ne peut pas etre vide");
         }
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("Email invalide");
         }
         if (subject == null || subject.trim().isEmpty()) {
-            throw new IllegalArgumentException("La matière ne peut pas être vide");
+            throw new IllegalArgumentException("La matiere ne peut pas etre vide");
         }
-
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.email = email.trim().toLowerCase();
@@ -32,55 +31,31 @@ public class Teacher extends User {
     }
 
     public Quiz createQuiz(String id, String title, String course, int duration) {
-        return new Quiz(id, title, course, duration);
+        return new Quiz(id, title, course, duration, getId());
     }
 
     public void addQuestion(Quiz quiz, Question question) {
-        if (quiz != null && question != null) {
-            quiz.addQuestion(question);
-        }
+        if (quiz != null && question != null) { quiz.addQuestion(question); }
     }
 
-    public void defineCorrectAnswer(Choice choice) {
-        if (choice != null) {
-            System.out.println("Réponse correcte définie : " + choice.getText());
-        }
+    public boolean defineCorrectAnswer(Choice choice) {
+        if (choice == null) { return false; }
+        return choice.isCorrectAnswer();
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+    public String getEmail() { return email; }
+    public String getSubject() { return subject; }
+    public String getFullName() { return firstName + " " + lastName; }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Teacher teacher = (Teacher) o;
-        return Objects.equals(getId(), teacher.getId());
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        return Objects.equals(getId(), ((Teacher) o).getId());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(getId());
-    }
+    public int hashCode() { return Objects.hash(getId()); }
 }
