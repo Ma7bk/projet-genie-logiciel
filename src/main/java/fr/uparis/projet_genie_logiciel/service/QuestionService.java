@@ -3,8 +3,7 @@ package fr.uparis.projet_genie_logiciel.service;
 import fr.uparis.projet_genie_logiciel.entity.*;
 import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
+
 
 
 public class QuestionService {
