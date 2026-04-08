@@ -1,12 +1,9 @@
 package fr.uparis.projet_genie_logiciel.service;
 
 import fr.uparis.projet_genie_logiciel.entity.*;
-import fr.uparis.projet_genie_logiciel.repository.QuizRepository;
 import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;
+import fr.uparis.projet_genie_logiciel.repository.QuizRepository;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-
 
 public class QuizService {
     private final QuizRepository quizRepository;
@@ -20,18 +17,24 @@ public class QuizService {
         this.questionRepository = questionRepository;
     }
 
-    
-    public Quiz createQuizByTeacher(Teacher teacher, String id, String title, String course, int duration) {
-        if (teacher == null) throw new IllegalArgumentException("L'enseignant ne peut pas être null");
+    public Quiz createQuizByTeacher(
+            Teacher teacher,
+            String id,
+            String title,
+            String course,
+            int duration) {
+        if (teacher == null) {
+            throw new IllegalArgumentException("L'enseignant ne peut pas être null");
+        }
         if (quizRepository.findById(id) != null) {
             throw new IllegalStateException("Un quiz avec l'ID '" + id + "' existe déjà");
         }
+
         Quiz quiz = teacher.createQuiz(id, title, course, duration);
         quizRepository.save(quiz);
         return quiz;
     }
 
-    
     public Score takeQuizByStudent(Student student, Quiz quiz, List<Choice> answers) {
         if (student == null || quiz == null || answers == null) {
             throw new IllegalArgumentException("Les paramètres ne peuvent pas être null");
@@ -55,7 +58,6 @@ public class QuizService {
         return score;
     }
 
-    // Méthodes TP5
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
     }
@@ -70,7 +72,8 @@ public class QuizService {
 
     public void deleteQuiz(String id) {
         if (quizRepository.findById(id) == null) {
-            throw new IllegalArgumentException("Impossible de supprimer : quiz non trouvé avec l'ID " + id);
+            throw new IllegalArgumentException(
+                    "Impossible de supprimer : quiz non trouvé avec l'ID " + id);
         }
         quizRepository.delete(id);
     }

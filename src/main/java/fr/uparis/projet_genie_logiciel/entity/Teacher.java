@@ -3,7 +3,6 @@ package fr.uparis.projet_genie_logiciel.entity;
 import java.util.Objects;
 
 
- /* Entité Teacher selon le diagramme UML */
 public class Teacher extends User {
     private final String firstName;
     private final String lastName;
@@ -12,7 +11,7 @@ public class Teacher extends User {
 
     public Teacher(String id, String firstName, String lastName, String email, String subject) {
         super(id != null ? id.trim() : null);
-        
+
         if (firstName == null || firstName.trim().isEmpty()) {
             throw new IllegalArgumentException("Le prénom ne peut pas être vide");
         }
@@ -32,7 +31,6 @@ public class Teacher extends User {
         this.subject = subject.trim();
     }
 
-
     public Quiz createQuiz(String id, String title, String course, int duration) {
         return new Quiz(id, title, course, duration);
     }
@@ -49,17 +47,34 @@ public class Teacher extends User {
         }
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
 
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getEmail() { return email; }
-    public String getSubject() { return subject; }
-    public String getFullName() { return firstName + " " + lastName; }
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Teacher teacher = (Teacher) o;
         return Objects.equals(getId(), teacher.getId());
     }

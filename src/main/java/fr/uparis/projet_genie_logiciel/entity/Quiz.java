@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/* Entité Quiz selon le diagramme UML */
+
 public class Quiz {
     private final String id;
     private final String title;
@@ -25,6 +25,7 @@ public class Quiz {
         if (duration <= 0) {
             throw new IllegalArgumentException("La durée doit être positive");
         }
+
         this.id = id.trim();
         this.title = title.trim();
         this.course = course.trim();
@@ -32,29 +33,51 @@ public class Quiz {
         this.questions = new ArrayList<>();
     }
 
-
-    public String getTitle() { return title; }
-    public List<Question> getQuestions() { return new ArrayList<>(questions); }
-    public void addQuestion(Question question) {
-        if (question != null) this.questions.add(question);
+    public String getTitle() {
+        return title;
     }
+
+    public List<Question> getQuestions() {
+        return new ArrayList<>(questions);
+    }
+
+    public void addQuestion(Question question) {
+        if (question != null) {
+            this.questions.add(question);
+        }
+    }
+
     public void start() {
         System.out.println("Démarrage du quiz : " + title);
     }
+
     public Question getFirstQuestion() {
-        if (questions.isEmpty()) return null;
+        if (questions.isEmpty()) {
+            return null;
+        }
         return questions.get(0);
     }
 
+    public String getId() {
+        return id;
+    }
 
-    public String getId() { return id; }
-    public String getCourse() { return course; }
-    public int getDuration() { return duration; }
+    public String getCourse() {
+        return course;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Quiz quiz = (Quiz) o;
         return Objects.equals(id, quiz.id);
     }
