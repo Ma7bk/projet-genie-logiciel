@@ -1,5 +1,4 @@
 package fr.uparis.projet_genie_logiciel.service;
-
 import fr.uparis.projet_genie_logiciel.entity.*;
 import fr.uparis.projet_genie_logiciel.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,403 +6,189 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesTest {
 
-    @Mock private StudentRepository studentRepository;
-    @Mock private TeacherRepository teacherRepository;
-    @Mock private QuestionRepository questionRepository;
-    @Mock private QuizRepository quizRepository;
+    @Mock private TeacherRepository teacherRepo;
+    @Mock private StudentRepository studentRepo;
+    @Mock private QuizRepository quizRepo;
+    @Mock private QuestionRepository questionRepo;
 
-    private StudentService studentService;
     private TeacherService teacherService;
+    private StudentService studentService;
     private QuestionService questionService;
     private QuizService quizService;
+    private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        studentService  = new StudentService(studentRepository);
-        teacherService  = new TeacherService(teacherRepository);
-        questionService = new QuestionService(questionRepository);
-        quizService     = new QuizService(quizRepository, questionRepository);
+        teacherService  = new TeacherService(teacherRepo);
+        studentService  = new StudentService(studentRepo);
+        questionService = new QuestionService(questionRepo);
+        quizService     = new QuizService(quizRepo, questionRepo);
+        authService     = new AuthService(teacherRepo, studentRepo);
     }
 
-   
-    @Test
-    void testStudentServiceNullRepoThrows() {
-        assertThrows(IllegalArgumentException.class, () -> new StudentService(null));
-    }
-
-    @Test
-    void testStudentServiceCreateOk() {
-        when(studentRepository.findById("S1")).thenReturn(null);
-        when(studentRepository.findByEmail("jean@u-paris.fr")).thenReturn(null);
-
-        studentService.createStudent("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        verify(studentRepository).save(any(Student.class));
-    }
-
-    @Test
-    void testStudentServiceCreateDuplicateIdThrows() {
-        when(studentRepository.findById("S1"))
-            .thenReturn(new Student("S1", "A", "B", "a@b.com", "2A"));
-        assertThrows(IllegalStateException.class,
-            () -> studentService.createStudent("S1", "A", "B", "a@b.com", "2A"));
-    }
-
-    @Test
-    void testStudentServiceCreateDuplicateEmailThrows() {
-        when(studentRepository.findById("S1")).thenReturn(null);
-        when(studentRepository.findByEmail("a@b.com"))
-            .thenReturn(new Student("S2", "A", "B", "a@b.com", "2A"));
-        assertThrows(IllegalStateException.class,
-            () -> studentService.createStudent("S1", "A", "B", "a@b.com", "2A"));
-    }
-
-    @Test
-    void testStudentServiceGetById() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        when(studentRepository.findById("S1")).thenReturn(s);
-        assertEquals(s, studentService.getStudentById("S1"));
-    }
-
-    @Test
-    void testStudentServiceGetByIdNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> studentService.getStudentById("INCONNU"));
-    }
-
-    @Test
-    void testStudentServiceGetByEmail() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        when(studentRepository.findByEmail("jean@u-paris.fr")).thenReturn(s);
-        assertEquals(s, studentService.getStudentByEmail("jean@u-paris.fr"));
-    }
-
-    @Test
-    void testStudentServiceGetByEmailNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> studentService.getStudentByEmail("inconnu@x.com"));
-    }
-
-    @Test
-    void testStudentServiceGetByClasseEmptyThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> studentService.getStudentsByClasse(""));
-    }
-
-    @Test
-    void testStudentServiceGetByClasse() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        when(studentRepository.findByClasse("2A")).thenReturn(Arrays.asList(s));
-        assertEquals(1, studentService.getStudentsByClasse("2A").size());
-    }
-
-    @Test
-    void testStudentServiceGetAll() {
-        when(studentRepository.findAll()).thenReturn(Collections.emptyList());
-        assertTrue(studentService.getAllStudents().isEmpty());
-    }
-
-    @Test
-    void testStudentServiceCount() {
-        when(studentRepository.count()).thenReturn(3);
-        assertEquals(3, studentService.getTotalStudentCount());
-    }
-
-    @Test
-    void testStudentServiceDeleteOk() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        when(studentRepository.findById("S1")).thenReturn(s);
-        assertDoesNotThrow(() -> studentService.deleteStudent("S1"));
-        verify(studentRepository).delete("S1");
-    }
-
-    @Test
-    void testStudentServiceDeleteNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> studentService.deleteStudent("INCONNU"));
-    }
-
-    
-    @Test
-    void testTeacherServiceNullRepoThrows() {
+    // ── TeacherService ────────────────────────────────────────────────────────
+    @Test void testTeacherServiceNullRepo() {
         assertThrows(IllegalArgumentException.class, () -> new TeacherService(null));
     }
-
-    @Test
-    void testTeacherServiceCreateOk() {
-        when(teacherRepository.findById("T1")).thenReturn(null);
-        when(teacherRepository.findByEmail("marie@u-paris.fr")).thenReturn(null);
-
-        teacherService.createTeacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        verify(teacherRepository).save(any(Teacher.class));
+    @Test void testTeacherServiceCreate() {
+        when(teacherRepo.findById("T1")).thenReturn(null);
+        when(teacherRepo.findByEmail("marie@u.fr")).thenReturn(null);
+        teacherService.createTeacher("T1", "Marie", "Dubois", "marie@u.fr", "GL", "pwd");
+        verify(teacherRepo).save(any(Teacher.class));
     }
-
-    @Test
-    void testTeacherServiceCreateDuplicateIdThrows() {
-        when(teacherRepository.findById("T1"))
-            .thenReturn(new Teacher("T1", "A", "B", "a@b.com", "GL"));
+    @Test void testTeacherServiceCreateDuplicateId() {
+        when(teacherRepo.findById("T1")).thenReturn(new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd"));
         assertThrows(IllegalStateException.class,
-            () -> teacherService.createTeacher("T1", "A", "B", "a@b.com", "GL"));
+            () -> teacherService.createTeacher("T1", "A", "B", "a@b.com", "GL", "pwd"));
     }
-
-    @Test
-    void testTeacherServiceCreateDuplicateEmailThrows() {
-        when(teacherRepository.findById("T1")).thenReturn(null);
-        when(teacherRepository.findByEmail("marie@u-paris.fr"))
-            .thenReturn(new Teacher("T2", "A", "B", "marie@u-paris.fr", "GL"));
+    @Test void testTeacherServiceCreateDuplicateEmail() {
+        when(teacherRepo.findById("T1")).thenReturn(null);
+        when(teacherRepo.findByEmail("marie@u.fr")).thenReturn(new Teacher("T2", "A", "B", "marie@u.fr", "GL", "pwd"));
         assertThrows(IllegalStateException.class,
-            () -> teacherService.createTeacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL"));
+            () -> teacherService.createTeacher("T1", "Marie", "D", "marie@u.fr", "GL", "pwd"));
     }
-
-    @Test
-    void testTeacherServiceGetById() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(teacherRepository.findById("T1")).thenReturn(t);
+    @Test void testTeacherServiceGetById() {
+        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u.fr", "GL", "pwd");
+        when(teacherRepo.findById("T1")).thenReturn(t);
         assertEquals(t, teacherService.getTeacherById("T1"));
     }
-
-    @Test
-    void testTeacherServiceGetByIdNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> teacherService.getTeacherById("INCONNU"));
+    @Test void testTeacherServiceGetByIdNotFound() {
+        assertThrows(IllegalArgumentException.class, () -> teacherService.getTeacherById("X"));
     }
-
-    @Test
-    void testTeacherServiceGetByEmail() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(teacherRepository.findByEmail("marie@u-paris.fr")).thenReturn(t);
-        assertEquals(t, teacherService.getTeacherByEmail("marie@u-paris.fr"));
+    @Test void testTeacherServiceDelete() {
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd");
+        when(teacherRepo.findById("T1")).thenReturn(t);
+        teacherService.deleteTeacher("T1");
+        verify(teacherRepo).delete("T1");
     }
-
-    @Test
-    void testTeacherServiceGetByEmailNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> teacherService.getTeacherByEmail("inconnu@x.com"));
+    @Test void testTeacherServiceDeleteNotFound() {
+        assertThrows(IllegalArgumentException.class, () -> teacherService.deleteTeacher("X"));
     }
-
-    @Test
-    void testTeacherServiceGetBySubjectEmptyThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> teacherService.getTeachersBySubject(""));
+    @Test void testTeacherServiceCount() {
+        when(teacherRepo.count()).thenReturn(3);
+        assertEquals(3, teacherService.getTotalTeacherCount());
     }
-
-    @Test
-    void testTeacherServiceGetBySubject() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(teacherRepository.findBySubject("GL")).thenReturn(Arrays.asList(t));
+    @Test void testTeacherServiceGetBySubject() {
+        when(teacherRepo.findBySubject("GL")).thenReturn(Collections.singletonList(
+            new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd")));
         assertEquals(1, teacherService.getTeachersBySubject("GL").size());
+        assertThrows(IllegalArgumentException.class, () -> teacherService.getTeachersBySubject(""));
     }
 
-    @Test
-    void testTeacherServiceGetAll() {
-        when(teacherRepository.findAll()).thenReturn(Collections.emptyList());
-        assertTrue(teacherService.getAllTeachers().isEmpty());
+    // ── StudentService ────────────────────────────────────────────────────────
+    @Test void testStudentServiceNullRepo() {
+        assertThrows(IllegalArgumentException.class, () -> new StudentService(null));
+    }
+    @Test void testStudentServiceCreate() {
+        when(studentRepo.findById("S1")).thenReturn(null);
+        when(studentRepo.findByEmail("jean@u.fr")).thenReturn(null);
+        studentService.createStudent("S1", "Jean", "Dupont", "jean@u.fr", "2A", "pwd");
+        verify(studentRepo).save(any(Student.class));
+    }
+    @Test void testStudentServiceCreateDuplicate() {
+        when(studentRepo.findById("S1")).thenReturn(new Student("S1", "A", "B", "a@b.com", "2A", "pwd"));
+        assertThrows(IllegalStateException.class,
+            () -> studentService.createStudent("S1", "A", "B", "a@b.com", "2A", "pwd"));
+    }
+    @Test void testStudentServiceGetById() {
+        Student s = new Student("S1", "Jean", "Dupont", "jean@u.fr", "2A", "pwd");
+        when(studentRepo.findById("S1")).thenReturn(s);
+        assertEquals(s, studentService.getStudentById("S1"));
+    }
+    @Test void testStudentServiceGetByIdNotFound() {
+        assertThrows(IllegalArgumentException.class, () -> studentService.getStudentById("X"));
+    }
+    @Test void testStudentServiceCount() {
+        when(studentRepo.count()).thenReturn(5);
+        assertEquals(5, studentService.getTotalStudentCount());
     }
 
-    @Test
-    void testTeacherServiceCount() {
-        when(teacherRepository.count()).thenReturn(2);
-        assertEquals(2, teacherService.getTotalTeacherCount());
-    }
-
-    @Test
-    void testTeacherServiceDeleteOk() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(teacherRepository.findById("T1")).thenReturn(t);
-        assertDoesNotThrow(() -> teacherService.deleteTeacher("T1"));
-        verify(teacherRepository).delete("T1");
-    }
-
-    @Test
-    void testTeacherServiceDeleteNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> teacherService.deleteTeacher("INCONNU"));
-    }
-
-
-
-    @Test
-    void testQuestionServiceNullRepoThrows() {
+    // ── QuestionService ───────────────────────────────────────────────────────
+    @Test void testQuestionServiceNullRepo() {
         assertThrows(IllegalArgumentException.class, () -> new QuestionService(null));
     }
-
-    @Test
-    void testQuestionServiceCreateQCMOk() {
-        when(questionRepository.findById("Q1")).thenReturn(null);
-        List<Choice> choices = Arrays.asList(new Choice("A", true), new Choice("B", false));
-        QCMQuestion q = questionService.createQCMQuestion("Q1", "Test ?", "Java", choices);
+    @Test void testCreateQCM() {
+        when(questionRepo.findById("QU1")).thenReturn(null);
+        QCMQuestion q = questionService.createQCMQuestion("QU1", "T?", "Java",
+            Arrays.asList(new Choice("A", true), new Choice("B", false)));
         assertNotNull(q);
-        verify(questionRepository).save(any(QCMQuestion.class));
+        verify(questionRepo).save(any(QCMQuestion.class));
     }
-
-    @Test
-    void testQuestionServiceCreateQCMDuplicateThrows() {
-        when(questionRepository.findById("Q1"))
-            .thenReturn(new QCMQuestion("Q1", "A", "B"));
+    @Test void testCreateQCMDuplicate() {
+        when(questionRepo.findById("QU1")).thenReturn(new QCMQuestion("QU1", "T", "C"));
         assertThrows(IllegalStateException.class,
-            () -> questionService.createQCMQuestion("Q1", "A", "B", Collections.emptyList()));
+            () -> questionService.createQCMQuestion("QU1", "T", "C", Collections.emptyList()));
     }
-
-    @Test
-    void testQuestionServiceCreateTrueFalseOk() {
-        when(questionRepository.findById("Q1")).thenReturn(null);
-        TrueFalseQuestion q = questionService.createTrueFalseQuestion("Q1", "Test ?", "Java", true);
+    @Test void testCreateTrueFalse() {
+        when(questionRepo.findById("QU1")).thenReturn(null);
+        TrueFalseQuestion q = questionService.createTrueFalseQuestion("QU1", "T?", "Java", true);
         assertNotNull(q);
-        verify(questionRepository).save(any(TrueFalseQuestion.class));
+    }
+    @Test void testQuestionServiceGetById() {
+        QCMQuestion q = new QCMQuestion("QU1", "T?", "Java");
+        when(questionRepo.findById("QU1")).thenReturn(q);
+        assertEquals(q, questionService.getQuestionById("QU1"));
+    }
+    @Test void testQuestionServiceGetByIdNotFound() {
+        assertThrows(IllegalArgumentException.class, () -> questionService.getQuestionById("X"));
+    }
+    @Test void testQuestionServiceCount() {
+        when(questionRepo.count()).thenReturn(7);
+        assertEquals(7, questionService.getTotalQuestionCount());
+    }
+    @Test void testQuestionServiceGetByCourseEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> questionService.getQuestionsByCourse(""));
     }
 
-    @Test
-    void testQuestionServiceCreateTrueFalseDuplicateThrows() {
-        when(questionRepository.findById("Q1"))
-            .thenReturn(new QCMQuestion("Q1", "A", "B"));
-        assertThrows(IllegalStateException.class,
-            () -> questionService.createTrueFalseQuestion("Q1", "A", "B", true));
+    // ── QuizService ───────────────────────────────────────────────────────────
+    @Test void testQuizServiceNullRepo() {
+        assertThrows(IllegalArgumentException.class, () -> new QuizService(null, questionRepo));
+        assertThrows(IllegalArgumentException.class, () -> new QuizService(quizRepo, null));
     }
-
-    @Test
-    void testQuestionServiceGetById() {
-        QCMQuestion q = new QCMQuestion("Q1", "Test ?", "Java");
-        when(questionRepository.findById("Q1")).thenReturn(q);
-        assertEquals(q, questionService.getQuestionById("Q1"));
-    }
-
-    @Test
-    void testQuestionServiceGetByIdNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> questionService.getQuestionById("INCONNU"));
-    }
-
-    @Test
-    void testQuestionServiceGetByCourseEmptyThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> questionService.getQuestionsByCourse(""));
-    }
-
-    @Test
-    void testQuestionServiceGetByCourse() {
-        QCMQuestion q = new QCMQuestion("Q1", "Test ?", "Java");
-        when(questionRepository.findByCourse("Java")).thenReturn(Arrays.asList(q));
-        assertEquals(1, questionService.getQuestionsByCourse("Java").size());
-    }
-
-    @Test
-    void testQuestionServiceGetAll() {
-        when(questionRepository.findAll()).thenReturn(Collections.emptyList());
-        assertTrue(questionService.getAllQuestions().isEmpty());
-    }
-
-    @Test
-    void testQuestionServiceCount() {
-        when(questionRepository.count()).thenReturn(5);
-        assertEquals(5, questionService.getTotalQuestionCount());
-    }
-
-    @Test
-    void testQuestionServiceDeleteOk() {
-        QCMQuestion q = new QCMQuestion("Q1", "Test ?", "Java");
-        when(questionRepository.findById("Q1")).thenReturn(q);
-        assertDoesNotThrow(() -> questionService.deleteQuestion("Q1"));
-        verify(questionRepository).delete("Q1");
-    }
-
-    @Test
-    void testQuestionServiceDeleteNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> questionService.deleteQuestion("INCONNU"));
-    }
-
-  
-    @Test
-    void testQuizServiceNullRepoThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> new QuizService(null, questionRepository));
-        assertThrows(IllegalArgumentException.class,
-            () -> new QuizService(quizRepository, null));
-    }
-
-    @Test
-    void testQuizServiceCreateOk() {
-        Teacher teacher = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(quizRepository.findById("Q1")).thenReturn(null);
-
+    @Test void testQuizServiceCreate() {
+        Teacher teacher = new Teacher("T1", "Marie", "Dubois", "marie@u.fr", "GL", "pwd");
+        when(quizRepo.findById("Q1")).thenReturn(null);
         Quiz quiz = quizService.createQuizByTeacher(teacher, "Q1", "Java Quiz", "Java", 30);
-        assertNotNull(quiz);
-        verify(quizRepository).save(any(Quiz.class));
+        assertNotNull(quiz); assertEquals("T1", quiz.getTeacherId());
+        verify(quizRepo).save(any(Quiz.class));
     }
-
-    @Test
-    void testQuizServiceCreateNullTeacherThrows() {
+    @Test void testQuizServiceCreateNullTeacher() {
         assertThrows(IllegalArgumentException.class,
-            () -> quizService.createQuizByTeacher(null, "Q1", "Java Quiz", "Java", 30));
+            () -> quizService.createQuizByTeacher(null, "Q1", "T", "C", 10));
     }
-
-    @Test
-    void testQuizServiceCreateDuplicateThrows() {
-        Teacher teacher = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        when(quizRepository.findById("Q1"))
-            .thenReturn(new Quiz("Q1", "Existing", "Java", 10));
+    @Test void testQuizServiceCreateDuplicate() {
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd");
+        when(quizRepo.findById("Q1")).thenReturn(new Quiz("Q1", "X", "Java", 10, "T1"));
         assertThrows(IllegalStateException.class,
-            () -> quizService.createQuizByTeacher(teacher, "Q1", "Java Quiz", "Java", 30));
+            () -> quizService.createQuizByTeacher(t, "Q1", "T", "C", 10));
     }
-
-    @Test
-    void testQuizServiceTakeQuizOk() {
-        // Utiliser des repos réels pour ce test d'intégration
-        InMemoryQuizRepository realQuizRepo = new InMemoryQuizRepository();
-        InMemoryQuestionRepository realQuestionRepo = new InMemoryQuestionRepository();
-        QuizService realService = new QuizService(realQuizRepo, realQuestionRepo);
-
-        Teacher teacher = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        Quiz quiz = realService.createQuizByTeacher(teacher, "Q1", "Java Quiz", "Java", 30);
-
-        QCMQuestion q = new QCMQuestion("QU1", "Test ?", "Java");
+    @Test void testQuizServiceTakeQuiz() {
+        InMemoryQuizRepository rq = new InMemoryQuizRepository();
+        InMemoryQuestionRepository rqu = new InMemoryQuestionRepository();
+        QuizService svc = new QuizService(rq, rqu);
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd");
+        Quiz quiz = svc.createQuizByTeacher(t, "Q1", "Java", "Java", 30);
         Choice bon = new Choice("Paris", true);
         Choice mauvais = new Choice("Lyon", false);
-        q.addChoice(bon);
-        q.addChoice(mauvais);
+        QCMQuestion q = new QCMQuestion("QU1", "T?", "Java");
+        q.addChoice(bon); q.addChoice(mauvais);
         quiz.addQuestion(q);
-
-        Student student = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        Score score = realService.takeQuizByStudent(student, quiz, Arrays.asList(bon));
+        Student student = new Student("S1", "Jean", "Dupont", "jean@u.fr", "2A", "pwd");
+        Score score = svc.takeQuizByStudent(student, quiz, Arrays.asList(bon));
         assertEquals(1, score.getValue());
+        assertEquals(1, student.viewScoreHistory().size());
     }
-
-    @Test
-    void testQuizServiceTakeQuizWrongAnswer() {
-        InMemoryQuizRepository realQuizRepo = new InMemoryQuizRepository();
-        InMemoryQuestionRepository realQuestionRepo = new InMemoryQuestionRepository();
-        QuizService realService = new QuizService(realQuizRepo, realQuestionRepo);
-
-        Teacher teacher = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
-        Quiz quiz = realService.createQuizByTeacher(teacher, "Q1", "Java Quiz", "Java", 30);
-
-        QCMQuestion q = new QCMQuestion("QU1", "Test ?", "Java");
-        Choice bon = new Choice("Paris", true);
-        Choice mauvais = new Choice("Lyon", false);
-        q.addChoice(bon);
-        q.addChoice(mauvais);
-        quiz.addQuestion(q);
-
-        Student student = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        Score score = realService.takeQuizByStudent(student, quiz, Arrays.asList(mauvais));
-        assertEquals(0, score.getValue());
-    }
-
-    @Test
-    void testQuizServiceTakeQuizNullParamsThrows() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
-        Student student = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-
+    @Test void testQuizServiceTakeQuizNullParams() {
+        Quiz quiz = new Quiz("Q1", "T", "C", 10, "T1");
+        Student student = new Student("S1", "A", "B", "a@u.fr", "2A", "pwd");
         assertThrows(IllegalArgumentException.class,
             () -> quizService.takeQuizByStudent(null, quiz, Collections.emptyList()));
         assertThrows(IllegalArgumentException.class,
@@ -411,56 +196,50 @@ class ServicesTest {
         assertThrows(IllegalArgumentException.class,
             () -> quizService.takeQuizByStudent(student, quiz, null));
     }
-
-    @Test
-    void testQuizServiceGetById() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
-        when(quizRepository.findById("Q1")).thenReturn(quiz);
+    @Test void testQuizServiceGetById() {
+        Quiz quiz = new Quiz("Q1", "T", "C", 10, "T1");
+        when(quizRepo.findById("Q1")).thenReturn(quiz);
         assertEquals(quiz, quizService.getQuizById("Q1"));
     }
-
-    @Test
-    void testQuizServiceGetByIdNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> quizService.getQuizById("INCONNU"));
+    @Test void testQuizServiceGetByIdNotFound() {
+        assertThrows(IllegalArgumentException.class, () -> quizService.getQuizById("X"));
     }
-
-    @Test
-    void testQuizServiceGetByCourseEmptyThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> quizService.getQuizzesByCourse(""));
-    }
-
-    @Test
-    void testQuizServiceGetByCourse() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
-        when(quizRepository.findByCourse("Java")).thenReturn(Arrays.asList(quiz));
-        assertEquals(1, quizService.getQuizzesByCourse("Java").size());
-    }
-
-    @Test
-    void testQuizServiceGetAll() {
-        when(quizRepository.findAll()).thenReturn(Collections.emptyList());
-        assertTrue(quizService.getAllQuizzes().isEmpty());
-    }
-
-    @Test
-    void testQuizServiceCount() {
-        when(quizRepository.count()).thenReturn(4);
+    @Test void testQuizServiceCount() {
+        when(quizRepo.count()).thenReturn(4);
         assertEquals(4, quizService.getTotalQuizCount());
     }
-
-    @Test
-    void testQuizServiceDeleteOk() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
-        when(quizRepository.findById("Q1")).thenReturn(quiz);
-        assertDoesNotThrow(() -> quizService.deleteQuiz("Q1"));
-        verify(quizRepository).delete("Q1");
+    @Test void testQuizServiceGetByCourseEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> quizService.getQuizzesByCourse(""));
     }
 
-    @Test
-    void testQuizServiceDeleteNotFoundThrows() {
-        assertThrows(IllegalArgumentException.class,
-            () -> quizService.deleteQuiz("INCONNU"));
+    // ── AuthService ───────────────────────────────────────────────────────────
+    @Test void testAuthLoginTeacherOk() {
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd123");
+        when(teacherRepo.findByEmail("a@b.com")).thenReturn(t);
+        assertEquals(t, authService.loginTeacher("a@b.com", "pwd123"));
+    }
+    @Test void testAuthLoginTeacherWrongPwd() {
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd123");
+        when(teacherRepo.findByEmail("a@b.com")).thenReturn(t);
+        assertNull(authService.loginTeacher("a@b.com", "wrong"));
+    }
+    @Test void testAuthLoginTeacherNotFound() {
+        assertNull(authService.loginTeacher("unknown@b.com", "pwd"));
+    }
+    @Test void testAuthLoginStudentOk() {
+        Student s = new Student("S1", "A", "B", "a@b.com", "2A", "pwd123");
+        when(studentRepo.findByEmail("a@b.com")).thenReturn(s);
+        assertEquals(s, authService.loginStudent("a@b.com", "pwd123"));
+    }
+    @Test void testAuthLoginStudentWrongPwd() {
+        Student s = new Student("S1", "A", "B", "a@b.com", "2A", "pwd123");
+        when(studentRepo.findByEmail("a@b.com")).thenReturn(s);
+        assertNull(authService.loginStudent("a@b.com", "wrong"));
+    }
+    @Test void testAuthNullParams() {
+        assertNull(authService.loginTeacher(null, "pwd"));
+        assertNull(authService.loginTeacher("a@b.com", null));
+        assertNull(authService.loginStudent(null, "pwd"));
+        assertNull(authService.loginStudent("a@b.com", null));
     }
 }

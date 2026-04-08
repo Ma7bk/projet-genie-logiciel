@@ -1,72 +1,50 @@
 package fr.uparis.projet_genie_logiciel.service;
-
-import fr.uparis.projet_genie_logiciel.entity.*;
+import fr.uparis.projet_genie_logiciel.entity.Choice;
+import fr.uparis.projet_genie_logiciel.entity.QCMQuestion;
+import fr.uparis.projet_genie_logiciel.entity.Question;
+import fr.uparis.projet_genie_logiciel.entity.TrueFalseQuestion;
 import fr.uparis.projet_genie_logiciel.repository.QuestionRepository;
 import java.util.List;
-
-
-
 public class QuestionService {
-    private final QuestionRepository questionRepository;
-
-    public QuestionService(QuestionRepository questionRepository) {
-        if (questionRepository == null) {
-            throw new IllegalArgumentException("Le repository ne peut pas être null");
-        }
-        this.questionRepository = questionRepository;
+    private final QuestionRepository repo;
+    public QuestionService(QuestionRepository repo) {
+        if (repo == null) { throw new IllegalArgumentException("Repository null"); }
+        this.repo = repo;
     }
-
-    
     public QCMQuestion createQCMQuestion(String id, String text, String course, List<Choice> choices) {
-        if (questionRepository.findById(id) != null) {
-            throw new IllegalStateException("Une question avec l'ID '" + id + "' existe déjà");
+        if (repo.findById(id) != null) {
+            throw new IllegalStateException("Question avec ID '" + id + "' existe deja");
         }
-        QCMQuestion question = new QCMQuestion(id, text, course);
-        for (Choice choice : choices) {
-            question.addChoice(choice);
-        }
-        questionRepository.save(question);
-        return question;
+        QCMQuestion q = new QCMQuestion(id, text, course);
+        for (Choice c : choices) { q.addChoice(c); }
+        repo.save(q);
+        return q;
     }
-
-    
     public TrueFalseQuestion createTrueFalseQuestion(String id, String text, String course, boolean isTrue) {
-        if (questionRepository.findById(id) != null) {
-            throw new IllegalStateException("Une question avec l'ID '" + id + "' existe déjà");
+        if (repo.findById(id) != null) {
+            throw new IllegalStateException("Question avec ID '" + id + "' existe deja");
         }
-        TrueFalseQuestion question = new TrueFalseQuestion(id, text, course, isTrue);
-        questionRepository.save(question);
-        return question;
+        TrueFalseQuestion q = new TrueFalseQuestion(id, text, course, isTrue);
+        repo.save(q);
+        return q;
     }
-
-
-    public List<Question> getAllQuestions() {
-        return questionRepository.findAll();
-    }
-
+    public List<Question> getAllQuestions() { return repo.findAll(); }
     public Question getQuestionById(String id) {
-        Question question = questionRepository.findById(id);
-        if (question == null) {
-            throw new IllegalArgumentException("Question non trouvée avec l'ID : " + id);
-        }
-        return question;
+        Question q = repo.findById(id);
+        if (q == null) { throw new IllegalArgumentException("Question non trouvee : " + id); }
+        return q;
     }
-
     public void deleteQuestion(String id) {
-        if (questionRepository.findById(id) == null) {
-            throw new IllegalArgumentException("Impossible de supprimer : question non trouvée avec l'ID " + id);
+        if (repo.findById(id) == null) {
+            throw new IllegalArgumentException("Question non trouvee : " + id);
         }
-        questionRepository.delete(id);
+        repo.delete(id);
     }
-
     public List<Question> getQuestionsByCourse(String course) {
         if (course == null || course.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le nom du cours ne peut pas être vide");
+            throw new IllegalArgumentException("Le cours ne peut pas etre vide");
         }
-        return questionRepository.findByCourse(course);
+        return repo.findByCourse(course);
     }
-
-    public int getTotalQuestionCount() {
-        return questionRepository.count();
-    }
+    public int getTotalQuestionCount() { return repo.count(); }
 }

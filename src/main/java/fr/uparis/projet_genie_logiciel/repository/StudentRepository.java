@@ -3,9 +3,7 @@ package fr.uparis.projet_genie_logiciel.repository;
 import fr.uparis.projet_genie_logiciel.entity.Student;
 import java.util.List;
 
-/**
- * Interface du repository pour les étudiants
- */
+
 public interface StudentRepository {
     
     void save(Student student);

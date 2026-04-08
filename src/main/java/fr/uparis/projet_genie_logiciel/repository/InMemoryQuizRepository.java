@@ -1,72 +1,31 @@
 package fr.uparis.projet_genie_logiciel.repository;
-
 import fr.uparis.projet_genie_logiciel.entity.Quiz;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-
 public class InMemoryQuizRepository implements QuizRepository {
-    
-    private final List<Quiz> quizzes;
-    
-    public InMemoryQuizRepository() {
-        this.quizzes = new ArrayList<>();
+    private final List<Quiz> quizzes = new ArrayList<>();
+    public void save(Quiz q) {
+        if (q == null) { throw new IllegalArgumentException("Quiz null"); }
+        delete(q.getId());
+        quizzes.add(q);
     }
-    
-    @Override
-    public void save(Quiz quiz) {
-        if (quiz == null) {
-            throw new IllegalArgumentException("Le quiz ne peut pas être null");
-        }
-        
-        Quiz existing = findById(quiz.getId());
-        if (existing != null) {
-            delete(quiz.getId());
-        }
-        
-        quizzes.add(quiz);
-    }
-    
-    @Override
-    public List<Quiz> findAll() {
-        return new ArrayList<>(quizzes);
-    }
-    
-    @Override
+    public List<Quiz> findAll() { return new ArrayList<>(quizzes); }
     public Quiz findById(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            return null;
-        }
-        
-        return quizzes.stream()
-                .filter(q -> q.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        if (id == null || id.trim().isEmpty()) { return null; }
+        return quizzes.stream().filter(q -> q.getId().equals(id)).findFirst().orElse(null);
     }
-    
-    @Override
     public boolean delete(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            return false;
-        }
-        
+        if (id == null || id.trim().isEmpty()) { return false; }
         return quizzes.removeIf(q -> q.getId().equals(id));
     }
-    
-    @Override
     public List<Quiz> findByCourse(String course) {
-        if (course == null || course.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        
-        return quizzes.stream()
-                .filter(q -> q.getCourse().equalsIgnoreCase(course))
-                .collect(Collectors.toList());
+        if (course == null || course.trim().isEmpty()) { return new ArrayList<>(); }
+        return quizzes.stream().filter(q -> q.getCourse().equalsIgnoreCase(course)).collect(Collectors.toList());
     }
-    
-    @Override
-    public int count() {
-        return quizzes.size();
+    public List<Quiz> findByTeacherId(String teacherId) {
+        if (teacherId == null || teacherId.trim().isEmpty()) { return new ArrayList<>(); }
+        return quizzes.stream().filter(q -> q.getTeacherId().equals(teacherId)).collect(Collectors.toList());
     }
+    public int count() { return quizzes.size(); }
 }

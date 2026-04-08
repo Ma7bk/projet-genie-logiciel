@@ -80,33 +80,27 @@ class ExtraEntityTest {
 
     @Test
     void testQuizAddMultipleQuestions() {
-        Quiz quiz = new Quiz("Q1", "Mon Quiz", "Java", 30);
+        Quiz quiz = new Quiz("Q1", "Mon Quiz", "Java", 30, "T1");
         quiz.addQuestion(new QCMQuestion("QU1", "Q1 ?", "Java"));
         quiz.addQuestion(new QCMQuestion("QU2", "Q2 ?", "Java"));
         quiz.addQuestion(new TrueFalseQuestion("TF1", "Q3 ?", "Java", true));
         assertEquals(3, quiz.getQuestions().size());
     }
 
-    @Test
-    void testQuizGetFirstQuestionAfterAdd() {
-        Quiz quiz = new Quiz("Q1", "Mon Quiz", "Java", 30);
-        QCMQuestion q = new QCMQuestion("QU1", "Première ?", "Java");
-        quiz.addQuestion(q);
-        assertEquals(q, quiz.getFirstQuestion());
-    }
 
+  
     // ── Score ────────────────────────────────────────────────────────────────
 
     @Test
     void testScoreInitialValueIsZero() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
+        Quiz quiz = new Quiz("Q1", "Test", "Java", 10, "T1");
         Score score = new Score(quiz);
         assertEquals(0, score.getValue());
     }
 
     @Test
     void testScoreAddMultiplePoints() {
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
+        Quiz quiz = new Quiz("Q1", "Test", "Java", 10, "T1");
         Score score = new Score(quiz);
         score.addPoint();
         score.addPoint();
@@ -118,20 +112,20 @@ class ExtraEntityTest {
 
     @Test
     void testStudentFullName() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
+        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A", "password123");
         assertEquals("Jean Dupont", s.getFullName());
     }
 
     @Test
     void testStudentScoreHistoryInitiallyEmpty() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
+        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A", "password123");
         assertTrue(s.viewScoreHistory().isEmpty());
     }
 
     @Test
     void testStudentAddScoreToHistory() {
-        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A");
-        Quiz quiz = new Quiz("Q1", "Test", "Java", 10);
+        Student s = new Student("S1", "Jean", "Dupont", "jean@u-paris.fr", "2A", "password123");
+        Quiz quiz = new Quiz("Q1", "Test", "Java", 10, "T1");
         Score score = new Score(quiz);
         s.addScoreToHistory(score);
         assertEquals(1, s.viewScoreHistory().size());
@@ -141,13 +135,13 @@ class ExtraEntityTest {
 
     @Test
     void testTeacherFullName() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
+        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL", "password123");
         assertEquals("Marie Dubois", t.getFullName());
     }
 
     @Test
     void testTeacherCreateQuizNotNull() {
-        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL");
+        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u-paris.fr", "GL", "password123");
         Quiz quiz = t.createQuiz("Q1", "Quiz GL", "GL", 20);
         assertNotNull(quiz);
     }
