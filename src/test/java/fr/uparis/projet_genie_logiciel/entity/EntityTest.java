@@ -216,4 +216,31 @@ class EntityTest {
         assertThrows(IllegalArgumentException.class,
             () -> new Student("", "A", "B", "a@b.com", "2A", "pwd"));
     }
+    @Test void testTeacherToFileLineDoesNotContainClearPassword() {
+        Teacher t = new Teacher("T1", "Marie", "Dubois", "marie@u.fr", "GL", "monSecret");
+        String line = t.toFileLine("|");
+        assertFalse(line.contains("monSecret"), "Le mot de passe en clair ne doit pas apparaitre");
+        // Le hash SHA-256 fait 64 caracteres
+        String[] parts = line.split("\\|");
+        assertEquals(64, parts[parts.length - 1].length());
+    }
+    @Test void testStudentToFileLineDoesNotContainClearPassword() {
+        Student s = new Student("S1", "Jean", "Dupont", "jean@u.fr", "2A", "monSecret");
+        String line = s.toFileLine("|");
+        assertFalse(line.contains("monSecret"), "Le mot de passe en clair ne doit pas apparaitre");
+        String[] parts = line.split("\\|");
+        assertEquals(64, parts[parts.length - 1].length());
+    }
+    @Test void testCheckPasswordAfterHash() {
+        Teacher t = new Teacher("T1", "A", "B", "a@b.com", "GL", "pwd123");
+        assertTrue(t.checkPassword("pwd123"));
+        assertFalse(t.checkPassword("wrong"));
+        assertFalse(t.checkPassword(null));
+    }
+    @Test void testUserInvalidPassword() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new Teacher("T1", "A", "B", "a@b.com", "GL", null));
+        assertThrows(IllegalArgumentException.class,
+            () -> new Teacher("T1", "A", "B", "a@b.com", "GL", ""));
+    }
 }

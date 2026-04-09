@@ -295,4 +295,46 @@ class PersistenceManagerTest {
         assertEquals(2, newSR.count());
         assertEquals(2, newQR.count());
     }
+
+    // ── Sécurité : mot de passe non stocké en clair ───────────────────────────
+
+    @Test
+    void testPasswordNotStoredInClear() {
+        teacherRepo.save(new Teacher("T1", "Marie", "Dubois", "marie@u.fr", "GL", "monSecret"));
+        pm.save();
+        java.util.List<String> lines = store.readLines(store.getTeachersFile());
+        assertFalse(lines.isEmpty());
+        assertFalse(lines.get(0).contains("monSecret"),
+            "Le mot de passe ne doit pas etre stocke en clair !");
+        String[] parts = lines.get(0).split("\\|");
+        assertEquals(64, parts[parts.length - 1].length(),
+            "Le champ password doit etre un hash SHA-256 de 64 chars");
+    }
+
+    @Test
+    void testStudentPasswordNotStoredInClear() {
+        studentRepo.save(new Student("S1", "Jean", "Dupont", "jean@u.fr", "2A", "monSecret"));
+        pm.save();
+        java.util.List<String> lines = store.readLines(store.getStudentsFile());
+        assertFalse(lines.isEmpty());
+        assertFalse(lines.get(0).contains("monSecret"),
+            "Le mot de passe ne doit pas etre stocke en clair !");
+        String[] parts = lines.get(0).split("\\|");
+        assertEquals(64, parts[parts.length - 1].length());
+    }
+
+    @Test
+    void testPasswordStillWorksAfterLoadRestore() {
+        teacherRepo.save(new Teacher("T1", "A", "B", "a@u.fr", "GL", "secret42"));
+        pm.save();
+        InMemoryTeacherRepository newRepo = new InMemoryTeacherRepository();
+        PersistenceManager pm2 = new PersistenceManager(store, newRepo,
+            new InMemoryStudentRepository(), new InMemoryQuizRepository(),
+            new InMemoryQuestionRepository(), new AppContext());
+        pm2.load();
+        Teacher loaded = newRepo.findById("T1");
+        assertNotNull(loaded);
+        assertTrue(loaded.checkPassword("secret42"), "La connexion doit fonctionner apres restauration");
+        assertFalse(loaded.checkPassword("mauvais"), "Un mauvais mot de passe doit echouer");
+    }
 }

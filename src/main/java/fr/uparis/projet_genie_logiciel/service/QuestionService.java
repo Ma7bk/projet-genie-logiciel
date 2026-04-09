@@ -17,6 +17,7 @@ public class QuestionService {
         }
         QCMQuestion q = new QCMQuestion(id, text, course);
         for (Choice c : choices) { q.addChoice(c); }
+        q.validateChoices(); 
         repo.save(q);
         return q;
     }
