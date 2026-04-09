@@ -1,21 +1,22 @@
+
 package fr.uparis.projet_genie_logiciel.persistence;
 import fr.uparis.projet_genie_logiciel.entity.*;
 import fr.uparis.projet_genie_logiciel.repository.*;
 import java.util.ArrayList;
 import java.util.List;
-
+ 
 public class PersistenceManager {
     private static final String SEP = "|";
     private static final String SEP_RX = "\\|";
     private static final String CHOICE_SEP = ":";
-
+ 
     private final DataStore store;
     private final TeacherRepository teacherRepo;
     private final StudentRepository studentRepo;
     private final QuizRepository quizRepo;
     private final QuestionRepository questionRepo;
     private final AppContext ctx;
-
+ 
     public PersistenceManager(DataStore store, TeacherRepository teacherRepo,
                                StudentRepository studentRepo, QuizRepository quizRepo,
                                QuestionRepository questionRepo, AppContext ctx) {
@@ -26,7 +27,7 @@ public class PersistenceManager {
         this.questionRepo = questionRepo;
         this.ctx = ctx;
     }
-
+ 
     public void load() {
         loadCounters(); loadTeachers(); loadQuizzes(); loadQuestions();
         loadStudents(); loadScores();
@@ -37,7 +38,7 @@ public class PersistenceManager {
                 + " etudiant(s), " + quizRepo.count() + " quiz");
         }
     }
-
+ 
     private void loadCounters() {
         List<String> lines = store.readLines(store.getCountersFile());
         if (lines.isEmpty()) { return; }
@@ -49,7 +50,7 @@ public class PersistenceManager {
             ctx.setQuestionCount(safe(p[3]));
         }
     }
-
+ 
     private void loadTeachers() {
         for (String line : store.readLines(store.getTeachersFile())) {
             String[] p = line.split(SEP_RX, -1);
@@ -59,7 +60,7 @@ public class PersistenceManager {
             }
         }
     }
-
+ 
     private void loadQuizzes() {
         for (String line : store.readLines(store.getQuizzesFile())) {
             String[] p = line.split(SEP_RX, -1);
@@ -69,7 +70,7 @@ public class PersistenceManager {
             }
         }
     }
-
+ 
     private void loadQuestions() {
         for (String line : store.readLines(store.getQuestionsFile())) {
             String[] p = line.split(SEP_RX, -1);
@@ -95,7 +96,7 @@ public class PersistenceManager {
             } catch (Exception ignored) { }
         }
     }
-
+ 
     private void loadStudents() {
         for (String line : store.readLines(store.getStudentsFile())) {
             String[] p = line.split(SEP_RX, -1);
@@ -105,7 +106,7 @@ public class PersistenceManager {
             }
         }
     }
-
+ 
     private void loadScores() {
         for (String line : store.readLines(store.getScoresFile())) {
             String[] p = line.split(SEP_RX, -1);
@@ -121,65 +122,88 @@ public class PersistenceManager {
             } catch (Exception ignored) { }
         }
     }
-
+ 
     public void save() {
-        List<String> cnt = new ArrayList<>();
-        cnt.add(ctx.getTeacherCount() + SEP + ctx.getStudentCount()
+        saveCounters();
+        saveTeachers();
+        saveQuizzes();
+        saveQuestions();
+        saveStudents();
+        saveScores();
+    }
+ 
+    private void saveCounters() {
+        List<String> lines = new ArrayList<>();
+        lines.add(ctx.getTeacherCount() + SEP + ctx.getStudentCount()
             + SEP + ctx.getQuizCount() + SEP + ctx.getQuestionCount());
-        store.writeLines(store.getCountersFile(), cnt);
-
-        List<String> tLines = new ArrayList<>();
+        store.writeLines(store.getCountersFile(), lines);
+    }
+ 
+    private void saveTeachers() {
+        List<String> lines = new ArrayList<>();
         for (Teacher t : teacherRepo.findAll()) {
-            tLines.add(t.getId() + SEP + t.getFirstName() + SEP + t.getLastName()
+            lines.add(t.getId() + SEP + t.getFirstName() + SEP + t.getLastName()
                 + SEP + t.getEmail() + SEP + t.getSubject() + SEP + t.getPassword());
         }
-        store.writeLines(store.getTeachersFile(), tLines);
-
-        List<String> qLines = new ArrayList<>();
+        store.writeLines(store.getTeachersFile(), lines);
+    }
+ 
+    private void saveQuizzes() {
+        List<String> lines = new ArrayList<>();
         for (Quiz q : quizRepo.findAll()) {
-            qLines.add(q.getId() + SEP + q.getTitle() + SEP + q.getCourse()
+            lines.add(q.getId() + SEP + q.getTitle() + SEP + q.getCourse()
                 + SEP + q.getDuration() + SEP + q.getTeacherId());
         }
-        store.writeLines(store.getQuizzesFile(), qLines);
-
-        List<String> quLines = new ArrayList<>();
+        store.writeLines(store.getQuizzesFile(), lines);
+    }
+ 
+    private void saveQuestions() {
+        List<String> lines = new ArrayList<>();
         for (Quiz quiz : quizRepo.findAll()) {
             for (Question q : quiz.getQuestions()) {
-                StringBuilder sb = new StringBuilder();
-                if (q instanceof TrueFalseQuestion) {
-                    boolean isTrue = !q.getChoices().isEmpty() && q.getChoices().get(0).isCorrectAnswer();
-                    sb.append("TF").append(SEP).append(q.getId()).append(SEP)
-                      .append(q.getText()).append(SEP).append(q.getCourse())
-                      .append(SEP).append(quiz.getId()).append(SEP).append(isTrue);
-                } else {
-                    sb.append("QCM").append(SEP).append(q.getId()).append(SEP)
-                      .append(q.getText()).append(SEP).append(q.getCourse())
-                      .append(SEP).append(quiz.getId());
-                    for (Choice c : q.getChoices()) {
-                        sb.append(SEP).append(c.getText()).append(CHOICE_SEP).append(c.isCorrectAnswer());
-                    }
-                }
-                quLines.add(sb.toString());
+                lines.add(serializeQuestion(quiz, q));
             }
         }
-        store.writeLines(store.getQuestionsFile(), quLines);
-
-        List<String> sLines = new ArrayList<>();
+        store.writeLines(store.getQuestionsFile(), lines);
+    }
+ 
+    private String serializeQuestion(Quiz quiz, Question q) {
+        StringBuilder sb = new StringBuilder();
+        if (q instanceof TrueFalseQuestion) {
+            boolean isTrue = !q.getChoices().isEmpty() && q.getChoices().get(0).isCorrectAnswer();
+            sb.append("TF").append(SEP).append(q.getId()).append(SEP)
+              .append(q.getText()).append(SEP).append(q.getCourse())
+              .append(SEP).append(quiz.getId()).append(SEP).append(isTrue);
+        } else {
+            sb.append("QCM").append(SEP).append(q.getId()).append(SEP)
+              .append(q.getText()).append(SEP).append(q.getCourse())
+              .append(SEP).append(quiz.getId());
+            for (Choice c : q.getChoices()) {
+                sb.append(SEP).append(c.getText()).append(CHOICE_SEP).append(c.isCorrectAnswer());
+            }
+        }
+        return sb.toString();
+    }
+ 
+    private void saveStudents() {
+        List<String> lines = new ArrayList<>();
         for (Student s : studentRepo.findAll()) {
-            sLines.add(s.getId() + SEP + s.getFirstName() + SEP + s.getLastName()
+            lines.add(s.getId() + SEP + s.getFirstName() + SEP + s.getLastName()
                 + SEP + s.getEmail() + SEP + s.getClasse() + SEP + s.getPassword());
         }
-        store.writeLines(store.getStudentsFile(), sLines);
-
-        List<String> scLines = new ArrayList<>();
+        store.writeLines(store.getStudentsFile(), lines);
+    }
+ 
+    private void saveScores() {
+        List<String> lines = new ArrayList<>();
         for (Student s : studentRepo.findAll()) {
             for (Score sc : s.viewScoreHistory()) {
-                scLines.add(s.getId() + SEP + sc.getQuiz().getId() + SEP + sc.getValue());
+                lines.add(s.getId() + SEP + sc.getQuiz().getId() + SEP + sc.getValue());
             }
         }
-        store.writeLines(store.getScoresFile(), scLines);
+        store.writeLines(store.getScoresFile(), lines);
     }
-
+ 
     private int safe(String s) {
         try { return Integer.parseInt(s.trim()); } catch (Exception e) { return 0; }
     }
