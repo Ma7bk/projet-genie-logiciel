@@ -1,2 +1,28 @@
+# Build
 target/
+build/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+hs_err_pid*
+hs_err_pid*.log
+
+# Secrets
+.env
+*.pem
+*.key
+secrets.propertiestarget/
 
