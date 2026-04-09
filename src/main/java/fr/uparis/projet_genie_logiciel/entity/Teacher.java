@@ -9,25 +9,38 @@ public class Teacher extends User {
     private final String email;
     private final String subject;
 
+
     public Teacher(String id, String firstName, String lastName,
                    String email, String subject, String password) {
         super(id != null ? id.trim() : null, password);
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le prenom ne peut pas etre vide");
+        this.firstName = validate(firstName, "Le prenom");
+        this.lastName  = validate(lastName, "Le nom");
+        this.email     = validateEmail(email);
+        this.subject   = validate(subject, "La matiere");
+    }
+
+
+    public Teacher(String id, String firstName, String lastName,
+                   String email, String subject, String hashedPassword, boolean alreadyHashed) {
+        super(id != null ? id.trim() : null, hashedPassword, true);
+        this.firstName = validate(firstName, "Le prenom");
+        this.lastName  = validate(lastName, "Le nom");
+        this.email     = validateEmail(email);
+        this.subject   = validate(subject, "La matiere");
+    }
+
+    private static String validate(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " ne peut pas etre vide");
         }
-        if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le nom ne peut pas etre vide");
-        }
+        return value.trim();
+    }
+
+    private static String validateEmail(String email) {
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("Email invalide");
         }
-        if (subject == null || subject.trim().isEmpty()) {
-            throw new IllegalArgumentException("La matiere ne peut pas etre vide");
-        }
-        this.firstName = firstName.trim();
-        this.lastName = lastName.trim();
-        this.email = email.trim().toLowerCase();
-        this.subject = subject.trim();
+        return email.trim().toLowerCase();
     }
 
     public Quiz createQuiz(String id, String title, String course, int duration) {
@@ -44,10 +57,16 @@ public class Teacher extends User {
     }
 
     public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getEmail() { return email; }
-    public String getSubject() { return subject; }
-    public String getFullName() { return firstName + " " + lastName; }
+    public String getLastName()  { return lastName; }
+    public String getEmail()     { return email; }
+    public String getSubject()   { return subject; }
+    public String getFullName()  { return firstName + " " + lastName; }
+
+
+    public String toFileLine(String sep) {
+        return getId() + sep + firstName + sep + lastName
+            + sep + email + sep + subject + sep + getHashedPassword();
+    }
 
     @Override
     public boolean equals(Object o) {

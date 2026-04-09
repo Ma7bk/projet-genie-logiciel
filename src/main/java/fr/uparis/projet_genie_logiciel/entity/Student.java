@@ -12,26 +12,40 @@ public class Student extends User {
     private final String classe;
     private final List<Score> scoreHistory;
 
+
     public Student(String id, String firstName, String lastName,
                    String email, String classe, String password) {
         super(id != null ? id.trim() : null, password);
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le prenom ne peut pas etre vide");
+        this.firstName    = validate(firstName, "Le prenom");
+        this.lastName     = validate(lastName, "Le nom");
+        this.email        = validateEmail(email);
+        this.classe       = validate(classe, "La classe");
+        this.scoreHistory = new ArrayList<>();
+    }
+
+
+    public Student(String id, String firstName, String lastName,
+                   String email, String classe, String hashedPassword, boolean alreadyHashed) {
+        super(id != null ? id.trim() : null, hashedPassword, true);
+        this.firstName    = validate(firstName, "Le prenom");
+        this.lastName     = validate(lastName, "Le nom");
+        this.email        = validateEmail(email);
+        this.classe       = validate(classe, "La classe");
+        this.scoreHistory = new ArrayList<>();
+    }
+
+    private static String validate(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " ne peut pas etre vide");
         }
-        if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Le nom ne peut pas etre vide");
-        }
+        return value.trim();
+    }
+
+    private static String validateEmail(String email) {
         if (email == null || !email.contains("@")) {
             throw new IllegalArgumentException("Email invalide");
         }
-        if (classe == null || classe.trim().isEmpty()) {
-            throw new IllegalArgumentException("La classe ne peut pas etre vide");
-        }
-        this.firstName = firstName.trim();
-        this.lastName = lastName.trim();
-        this.email = email.trim().toLowerCase();
-        this.classe = classe.trim();
-        this.scoreHistory = new ArrayList<>();
+        return email.trim().toLowerCase();
     }
 
     public void startQuiz(Quiz quiz) {
@@ -42,6 +56,7 @@ public class Student extends User {
         if (question != null && choice != null) { question.checkAnswer(choice); }
     }
 
+
     public List<Score> viewScoreHistory() { return new ArrayList<>(scoreHistory); }
 
     public void addScoreToHistory(Score score) {
@@ -49,10 +64,16 @@ public class Student extends User {
     }
 
     public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public String getEmail() { return email; }
-    public String getClasse() { return classe; }
-    public String getFullName() { return firstName + " " + lastName; }
+    public String getLastName()  { return lastName; }
+    public String getEmail()     { return email; }
+    public String getClasse()    { return classe; }
+    public String getFullName()  { return firstName + " " + lastName; }
+
+
+    public String toFileLine(String sep) {
+        return getId() + sep + firstName + sep + lastName
+            + sep + email + sep + classe + sep + getHashedPassword();
+    }
 
     @Override
     public boolean equals(Object o) {

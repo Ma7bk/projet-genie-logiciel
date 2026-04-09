@@ -1,4 +1,3 @@
-
 package fr.uparis.projet_genie_logiciel.persistence;
 import fr.uparis.projet_genie_logiciel.entity.*;
 import fr.uparis.projet_genie_logiciel.repository.*;
@@ -55,7 +54,7 @@ public class PersistenceManager {
         for (String line : store.readLines(store.getTeachersFile())) {
             String[] p = line.split(SEP_RX, -1);
             if (p.length >= 6) {
-                try { teacherRepo.save(new Teacher(p[0], p[1], p[2], p[3], p[4], p[5])); }
+                try { teacherRepo.save(new Teacher(p[0], p[1], p[2], p[3], p[4], p[5], true)); }
                 catch (Exception ignored) { }
             }
         }
@@ -101,7 +100,7 @@ public class PersistenceManager {
         for (String line : store.readLines(store.getStudentsFile())) {
             String[] p = line.split(SEP_RX, -1);
             if (p.length >= 6) {
-                try { studentRepo.save(new Student(p[0], p[1], p[2], p[3], p[4], p[5])); }
+                try { studentRepo.save(new Student(p[0], p[1], p[2], p[3], p[4], p[5], true)); }
                 catch (Exception ignored) { }
             }
         }
@@ -142,8 +141,7 @@ public class PersistenceManager {
     private void saveTeachers() {
         List<String> lines = new ArrayList<>();
         for (Teacher t : teacherRepo.findAll()) {
-            lines.add(t.getId() + SEP + t.getFirstName() + SEP + t.getLastName()
-                + SEP + t.getEmail() + SEP + t.getSubject() + SEP + t.getPassword());
+            lines.add(t.toFileLine(SEP));
         }
         store.writeLines(store.getTeachersFile(), lines);
     }
@@ -188,8 +186,7 @@ public class PersistenceManager {
     private void saveStudents() {
         List<String> lines = new ArrayList<>();
         for (Student s : studentRepo.findAll()) {
-            lines.add(s.getId() + SEP + s.getFirstName() + SEP + s.getLastName()
-                + SEP + s.getEmail() + SEP + s.getClasse() + SEP + s.getPassword());
+            lines.add(s.toFileLine(SEP));
         }
         store.writeLines(store.getStudentsFile(), lines);
     }
