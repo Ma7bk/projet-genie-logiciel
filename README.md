@@ -19,6 +19,8 @@
 | BEN KHALIFA | Mahmoud Aziz |
 | ARGAB | Mohammed Amine |
 | ZEGGUIR | Anouar |
+| AbdeAbderrahmane | Eddahmeni |
+| Bouadel | Akram | 
 
 **Formation :** EIDD 2ème année — SIE  
 **Matière :** Génie Logiciel  
