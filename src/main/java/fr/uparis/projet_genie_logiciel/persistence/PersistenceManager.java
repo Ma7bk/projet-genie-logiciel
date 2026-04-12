@@ -55,7 +55,7 @@ public class PersistenceManager {
             String[] p = line.split(SEP_RX, -1);
             if (p.length >= 6) {
                 try { teacherRepo.save(new Teacher(p[0], p[1], p[2], p[3], p[4], p[5], true)); }
-                catch (Exception ignored) { }
+                catch (Exception e) { System.err.println("Avertissement : " + e.getMessage()); }
             }
         }
     }
@@ -65,7 +65,7 @@ public class PersistenceManager {
             String[] p = line.split(SEP_RX, -1);
             if (p.length >= 5) {
                 try { quizRepo.save(new Quiz(p[0], p[1], p[2], safe(p[3]), p[4])); }
-                catch (Exception ignored) { }
+                catch (Exception e) { System.err.println("Avertissement : " + e.getMessage()); }
             }
         }
     }
@@ -92,7 +92,7 @@ public class PersistenceManager {
                     questionRepo.save(q);
                     if (quiz != null) { quiz.addQuestion(q); }
                 }
-            } catch (Exception ignored) { }
+            } catch (Exception e) { System.err.println("Avertissement : " + e.getMessage()); }
         }
     }
  
@@ -101,7 +101,7 @@ public class PersistenceManager {
             String[] p = line.split(SEP_RX, -1);
             if (p.length >= 6) {
                 try { studentRepo.save(new Student(p[0], p[1], p[2], p[3], p[4], p[5], true)); }
-                catch (Exception ignored) { }
+                catch (Exception e) { System.err.println("Avertissement : " + e.getMessage()); }
             }
         }
     }
@@ -118,7 +118,7 @@ public class PersistenceManager {
                     for (int i = 0; i < safe(p[2]); i++) { score.addPoint(); }
                     student.addScoreToHistory(score);
                 }
-            } catch (Exception ignored) { }
+            } catch (Exception e) { System.err.println("Avertissement : " + e.getMessage()); }
         }
     }
  
