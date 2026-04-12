@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ExtraPasswordUtilTest {
 
+    private static final String SAMPLE = "sampleInput";
+    private static final String OTHER  = "otherInput";
+
     @Test
-    void testHashLongPassword() {
-        String longPwd = "a".repeat(200);
-        assertEquals(64, PasswordUtil.hash(longPwd).length());
+    void testHashLongInput() {
+        String longInput = "a".repeat(200);
+        assertEquals(64, PasswordUtil.hash(longInput).length());
     }
 
     @Test
@@ -19,39 +22,43 @@ class ExtraPasswordUtilTest {
 
     @Test
     void testHashIsHexadecimal() {
-        assertTrue(PasswordUtil.hash("testPassword").matches("[0-9a-f]{64}"));
+        assertTrue(PasswordUtil.hash(SAMPLE).matches("[0-9a-f]{64}"));
     }
 
     @Test
-    void testVerifyAfterMultipleHashes() {
-        String pwd = "multipleTest";
-        String hash1 = PasswordUtil.hash(pwd);
-        String hash2 = PasswordUtil.hash(pwd);
+    void testHashIsDeterministic() {
+        String hash1 = PasswordUtil.hash(SAMPLE);
+        String hash2 = PasswordUtil.hash(SAMPLE);
         assertEquals(hash1, hash2);
-        assertTrue(PasswordUtil.verify(pwd, hash1));
+        assertTrue(PasswordUtil.verify(SAMPLE, hash1));
     }
 
     @Test
     void testVerifyEmptyHash() {
-        assertFalse(PasswordUtil.verify("pwd", ""));
+        assertFalse(PasswordUtil.verify(SAMPLE, ""));
     }
 
     @Test
     void testVerifyCaseSensitive() {
-        String hash = PasswordUtil.hash("Password");
-        assertFalse(PasswordUtil.verify("password", hash));
-        assertFalse(PasswordUtil.verify("PASSWORD", hash));
+        String hash = PasswordUtil.hash(SAMPLE);
+        assertFalse(PasswordUtil.verify(SAMPLE.toLowerCase(), hash));
+        assertFalse(PasswordUtil.verify(SAMPLE.toUpperCase(), hash));
     }
 
     @Test
-    void testHashNumericPassword() {
-        String numPwd = "123456789";
-        assertEquals(64, PasswordUtil.hash(numPwd).length());
-        assertTrue(PasswordUtil.verify(numPwd, PasswordUtil.hash(numPwd)));
+    void testHashNumericInput() {
+        String numeric = "987654321";
+        assertEquals(64, PasswordUtil.hash(numeric).length());
+        assertTrue(PasswordUtil.verify(numeric, PasswordUtil.hash(numeric)));
     }
 
     @Test
     void testHashSingleChar() {
         assertEquals(64, PasswordUtil.hash("a").length());
+    }
+
+    @Test
+    void testHashDifferentInputs() {
+        assertNotEquals(PasswordUtil.hash(SAMPLE), PasswordUtil.hash(OTHER));
     }
 }
