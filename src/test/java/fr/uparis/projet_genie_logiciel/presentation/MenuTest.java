@@ -96,4 +96,31 @@ class MenuTest {
         assertTrue(out.toString().contains("0"));
         System.setOut(System.out);
     }
+    @Test
+    void testMenuWithNullTitleDoesNotThrow() {
+        CLI c = cli("0\n");
+        Menu menu = new Menu(null, c);
+        assertDoesNotThrow(menu::show);
+    }
+
+    @Test
+    void testMenuWithEmptyTitle() {
+        CLI c = cli("0\n");
+        Menu menu = new Menu("", c);
+        assertDoesNotThrow(menu::show);
+    }
+
+    @Test
+    void testMenuNoCommandsExitsCleanly() {
+        CLI c = cli("0\n");
+        Menu menu = new Menu("VIDE", c);
+        assertDoesNotThrow(menu::show);
+    }
+
+    @Test
+    void testMenuInvalidChoiceThenExit() {
+        CLI c = cli("99\n0\n");
+        Menu menu = new Menu("TEST", c);
+        assertDoesNotThrow(menu::show);
+    }
 }
