@@ -1,4 +1,8 @@
 ![CI](https://github.com/Ma7bk/projet-genie-logiciel/actions/workflows/ci.yml/badge.svg)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Ma7bk_projet-genie-logiciel&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ma7bk_projet-genie-logiciel)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=Ma7bk_projet-genie-logiciel)](https://sonarcloud.io/summary/new_code?id=Ma7bk_projet-genie-logiciel)
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=Ma7bk_projet-genie-logiciel)
+
 
 # Projet Génie Logiciel — Application Quiz
 
