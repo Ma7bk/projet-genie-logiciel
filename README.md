@@ -19,7 +19,7 @@
 | BEN KHALIFA | Mahmoud Aziz |
 | ARGAB | Mohammed Amine |
 | ZEGGUIR | Anouar |
-| EDDAHMANI | Abderrahmane |
+| AbdeAbderrahmane | Eddahmeni |
 | Bouadel | Akram | 
 
 **Formation :** EIDD 2ème année — SIE  
@@ -105,7 +105,6 @@ src/main/java/fr/uparis/projet_genie_logiciel/
 │   ├── Command.java                  Interface Command
 │   ├── CLI.java                      Affichage et saisie
 │   ├── Menu.java                     Gestion des menus
-│   ├── MainMenu.java                 menu principale
 │   └── commands/
 │       ├── TeacherCommands.java
 │       └── StudentCommands.java
