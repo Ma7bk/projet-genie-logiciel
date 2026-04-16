@@ -16,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MainMenuTest {
 
-    private InMemoryTeacherRepository teacherRepo;
-    private InMemoryStudentRepository studentRepo;
-    private InMemoryQuizRepository    quizRepo;
+    private InMemoryTeacherRepository  teacherRepo;
+    private InMemoryStudentRepository  studentRepo;
+    private InMemoryQuizRepository     quizRepo;
     private InMemoryQuestionRepository questionRepo;
     private AppContext ctx;
 
@@ -31,13 +31,12 @@ class MainMenuTest {
         ctx          = new AppContext();
     }
 
+   
     private String run(String input) {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        PrintStream old = System.out;
-        System.setOut(new PrintStream(buf));
-        try {
+        try (PrintStream ps = new PrintStream(buf)) {
             new MainMenu(
-                new CLI(new Scanner(input)),
+                new CLI(new Scanner(input), ps),
                 new TeacherService(teacherRepo),
                 new StudentService(studentRepo),
                 new QuizService(quizRepo, questionRepo),
@@ -45,8 +44,6 @@ class MainMenuTest {
                 new AuthService(teacherRepo, studentRepo),
                 ctx
             ).run();
-        } finally {
-            System.setOut(old);
         }
         return buf.toString();
     }

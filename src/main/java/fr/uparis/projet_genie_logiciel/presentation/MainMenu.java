@@ -11,11 +11,7 @@ import fr.uparis.projet_genie_logiciel.service.QuizService;
 import fr.uparis.projet_genie_logiciel.service.StudentService;
 import fr.uparis.projet_genie_logiciel.service.TeacherService;
 
-/**
- * Menu principal de l'application CLI.
- * Gère la navigation entre l'espace enseignant et l'espace étudiant.
- * App.java délègue entièrement le flux à cette classe.
- */
+
 public class MainMenu {
 
     private final CLI cli;
