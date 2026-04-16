@@ -17,8 +17,10 @@ import fr.uparis.projet_genie_logiciel.service.TeacherService;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,12 +33,11 @@ class AppTest {
     }
 
     private MainMenu buildMenu(String input) {
-        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
-        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
-        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
+        InMemoryTeacherRepository teacherRepository   = new InMemoryTeacherRepository();
+        InMemoryStudentRepository studentRepository   = new InMemoryStudentRepository();
+        InMemoryQuizRepository    quizRepository      = new InMemoryQuizRepository();
         InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
         AppContext ctx = new AppContext();
-
         return new MainMenu(
             cli(input),
             new TeacherService(teacherRepository),
@@ -48,11 +49,12 @@ class AppTest {
         );
     }
 
+
     private String captureOutput(Runnable action) {
-        PrintStream originalOut = System.out;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            System.setOut(new PrintStream(out));
+        PrintStream originalOut = System.out;
+        try (PrintStream ps = new PrintStream(out)) {
+            System.setOut(ps);
             action.run();
         } finally {
             System.setOut(originalOut);
@@ -60,11 +62,9 @@ class AppTest {
         return out.toString();
     }
 
-    private void deleteFile(String path) {
-        File file = new File(path);
-        if (file.exists()) {
-            assertTrue(file.delete(), "Impossible de supprimer : " + path);
-        }
+
+    private void deleteIfExists(String path) throws IOException {
+        Files.deleteIfExists(Paths.get(path));
     }
 
     @Test
@@ -104,31 +104,22 @@ class AppTest {
     }
 
     @Test
-    void testPersistenceLoadSave() {
+    void testPersistenceLoadSave() throws IOException {
         DataStore store = new DataStore();
         AppContext ctx = new AppContext();
-        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
-        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
-        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
-        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
-        PersistenceManager persistenceManager = new PersistenceManager(
-            store,
-            teacherRepository,
-            studentRepository,
-            quizRepository,
-            questionRepository,
-            ctx
-        );
-
-        persistenceManager.load();
-        persistenceManager.save();
-
-        deleteFile(store.getTeachersFile());
-        deleteFile(store.getStudentsFile());
-        deleteFile(store.getQuizzesFile());
-        deleteFile(store.getQuestionsFile());
-        deleteFile(store.getScoresFile());
-        deleteFile(store.getCountersFile());
+        InMemoryTeacherRepository  tr = new InMemoryTeacherRepository();
+        InMemoryStudentRepository  sr = new InMemoryStudentRepository();
+        InMemoryQuizRepository     qr = new InMemoryQuizRepository();
+        InMemoryQuestionRepository qu = new InMemoryQuestionRepository();
+        PersistenceManager pm = new PersistenceManager(store, tr, sr, qr, qu, ctx);
+        pm.load();
+        pm.save();
+        deleteIfExists(store.getTeachersFile());
+        deleteIfExists(store.getStudentsFile());
+        deleteIfExists(store.getQuizzesFile());
+        deleteIfExists(store.getQuestionsFile());
+        deleteIfExists(store.getScoresFile());
+        deleteIfExists(store.getCountersFile());
     }
 
     @Test
