@@ -38,7 +38,7 @@ public class MainMenu {
         this.ctx             = ctx;
     }
 
-
+    /** Lance la boucle principale du menu. */
     public void run() {
         cli.banner();
         boolean running = true;

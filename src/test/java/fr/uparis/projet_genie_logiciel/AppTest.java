@@ -16,10 +16,11 @@ import fr.uparis.projet_genie_logiciel.service.StudentService;
 import fr.uparis.projet_genie_logiciel.service.TeacherService;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,108 +28,108 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppTest {
 
-    private CLI cli(String input) {
+    private CLI cliFromString(String input) {
         return new CLI(new Scanner(input));
     }
 
     private MainMenu buildMenu(String input) {
-        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
-        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
-        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
-        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
+        InMemoryTeacherRepository  tr  = new InMemoryTeacherRepository();
+        InMemoryStudentRepository  sr  = new InMemoryStudentRepository();
+        InMemoryQuizRepository     qr  = new InMemoryQuizRepository();
+        InMemoryQuestionRepository qu  = new InMemoryQuestionRepository();
         AppContext ctx = new AppContext();
-
         return new MainMenu(
-            cli(input),
-            new TeacherService(teacherRepository),
-            new StudentService(studentRepository),
-            new QuizService(quizRepository, questionRepository),
-            new QuestionService(questionRepository),
-            new AuthService(teacherRepository, studentRepository),
+            cliFromString(input),
+            new TeacherService(tr),
+            new StudentService(sr),
+            new QuizService(qr, qu),
+            new QuestionService(qu),
+            new AuthService(tr, sr),
             ctx
         );
     }
 
-    private String captureOutput(Runnable action) {
-        PrintStream originalOut = System.out;
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-        try (PrintStream tempOut = new PrintStream(output)) {
-            System.setOut(tempOut);
-            action.run();
-        } finally {
-            System.setOut(originalOut);
+    /**
+     * Capture la sortie console en passant un PrintStream dédié au CLI.
+     * On ne touche jamais à System.out — on injecte directement le stream
+     * dans un CLI séparé qui écrit dans notre buffer.
+     */
+    private String runAndCapture(String input) {
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(buf)) {
+            InMemoryTeacherRepository  tr  = new InMemoryTeacherRepository();
+            InMemoryStudentRepository  sr  = new InMemoryStudentRepository();
+            InMemoryQuizRepository     qr  = new InMemoryQuizRepository();
+            InMemoryQuestionRepository qu  = new InMemoryQuestionRepository();
+            AppContext ctx = new AppContext();
+            CLI cli = new CLI(new Scanner(input), ps);
+            MainMenu menu = new MainMenu(
+                cli,
+                new TeacherService(tr),
+                new StudentService(sr),
+                new QuizService(qr, qu),
+                new QuestionService(qu),
+                new AuthService(tr, sr),
+                ctx
+            );
+            menu.run();
         }
-
-        return output.toString();
+        return buf.toString();
     }
 
-    private void deleteFile(String path) throws Exception {
-        Files.deleteIfExists(Path.of(path));
+    private void deleteIfExists(String path) throws IOException {
+        Files.deleteIfExists(Paths.get(path));
     }
 
     @Test
     void testMainMenuQuitter() {
-        String output = captureOutput(() -> buildMenu("0\n").run());
-        assertTrue(output.contains("Au revoir"));
+        assertTrue(runAndCapture("0\n").contains("Au revoir"));
     }
 
     @Test
     void testMainMenuOptionInvalide() {
-        String output = captureOutput(() -> buildMenu("99\n0\n").run());
-        assertTrue(output.toLowerCase().contains("invalide"));
+        assertTrue(runAndCapture("99\n0\n").toLowerCase().contains("invalide"));
     }
 
     @Test
     void testMainMenuEspaceEnseignantRetour() {
-        String output = captureOutput(() -> buildMenu("1\n0\n0\n").run());
-        assertTrue(output.contains("ESPACE ENSEIGNANT"));
+        assertTrue(runAndCapture("1\n0\n0\n").contains("ESPACE ENSEIGNANT"));
     }
 
     @Test
     void testMainMenuEspaceEtudiantRetour() {
-        String output = captureOutput(() -> buildMenu("2\n0\n0\n").run());
-        assertTrue(output.contains("ESPACE ETUDIANT"));
+        assertTrue(runAndCapture("2\n0\n0\n").contains("ESPACE ETUDIANT"));
     }
 
     @Test
     void testMainMenuLoginTeacherWrong() {
-        String output = captureOutput(() -> buildMenu("1\n1\nbad@email.com\nwrongpwd\n0\n0\n").run());
-        assertTrue(output.toLowerCase().contains("incorrect"));
+        assertTrue(runAndCapture("1\n1\nbad@email.com\nwrongpwd\n0\n0\n")
+            .toLowerCase().contains("incorrect"));
     }
 
     @Test
     void testMainMenuLoginStudentWrong() {
-        String output = captureOutput(() -> buildMenu("2\n1\nbad@email.com\nwrongpwd\n0\n0\n").run());
-        assertTrue(output.toLowerCase().contains("incorrect"));
+        assertTrue(runAndCapture("2\n1\nbad@email.com\nwrongpwd\n0\n0\n")
+            .toLowerCase().contains("incorrect"));
     }
 
     @Test
-    void testPersistenceLoadSave() throws Exception {
+    void testPersistenceLoadSave() throws IOException {
         DataStore store = new DataStore();
         AppContext ctx = new AppContext();
-        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
-        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
-        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
-        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
-        PersistenceManager persistenceManager = new PersistenceManager(
-            store,
-            teacherRepository,
-            studentRepository,
-            quizRepository,
-            questionRepository,
-            ctx
-        );
-
-        persistenceManager.load();
-        persistenceManager.save();
-
-        deleteFile(store.getTeachersFile());
-        deleteFile(store.getStudentsFile());
-        deleteFile(store.getQuizzesFile());
-        deleteFile(store.getQuestionsFile());
-        deleteFile(store.getScoresFile());
-        deleteFile(store.getCountersFile());
+        InMemoryTeacherRepository  tr = new InMemoryTeacherRepository();
+        InMemoryStudentRepository  sr = new InMemoryStudentRepository();
+        InMemoryQuizRepository     qr = new InMemoryQuizRepository();
+        InMemoryQuestionRepository qu = new InMemoryQuestionRepository();
+        PersistenceManager pm = new PersistenceManager(store, tr, sr, qr, qu, ctx);
+        pm.load();
+        pm.save();
+        deleteIfExists(store.getTeachersFile());
+        deleteIfExists(store.getStudentsFile());
+        deleteIfExists(store.getQuizzesFile());
+        deleteIfExists(store.getQuestionsFile());
+        deleteIfExists(store.getScoresFile());
+        deleteIfExists(store.getCountersFile());
     }
 
     @Test
