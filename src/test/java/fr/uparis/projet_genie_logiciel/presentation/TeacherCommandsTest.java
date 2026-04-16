@@ -37,15 +37,6 @@ class TeacherCommandsTest {
         ctx.setTeacherCount(1);
     }
 
-    /** Exécute une commande et retourne la sortie capturée — sans System.setOut */
-    private String exec(Command cmd) {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(buf)) {
-            cmd.execute();
-        }
-        return buf.toString();
-    }
-
     /** Construit un CLI avec PrintStream injecté */
     private CLI cli(String input, PrintStream ps) {
         return new CLI(new Scanner(input), ps);
