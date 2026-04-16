@@ -1,20 +1,32 @@
 package fr.uparis.projet_genie_logiciel.presentation;
+import java.io.PrintStream;
 import java.util.Scanner;
 
 public class CLI {
     private final Scanner scanner;
-    public CLI(Scanner scanner) { this.scanner = scanner; }
+    private final PrintStream out;
 
-    public void print(String msg) { System.out.println(msg); }
-    public void ok(String msg) { System.out.println("OK " + msg); }
-    public void error(String msg) { System.out.println("ERREUR " + msg); }
-    public void sep() { System.out.println("------------------------------------------"); }
-    public void title(String t) { sep(); System.out.println("  " + t); sep(); }
+
+    public CLI(Scanner scanner) {
+        this(scanner, System.out); 
+    }
+
+
+    public CLI(Scanner scanner, PrintStream out) {
+        this.scanner = scanner;
+        this.out     = out;
+    }
+
+    public void print(String msg) { out.println(msg); }
+    public void ok(String msg)    { out.println("OK " + msg); }
+    public void error(String msg) { out.println("ERREUR " + msg); }
+    public void sep()             { out.println("------------------------------------------"); }
+    public void title(String t)   { sep(); out.println("  " + t); sep(); }
     public void banner() {
-        System.out.println("==========================================");
-        System.out.println("        APPLICATION QUIZ");
-        System.out.println("     Groupe 2 - EIDD 2A SIE");
-        System.out.println("==========================================");
+        out.println("==========================================");
+        out.println("        APPLICATION QUIZ");
+        out.println("     Groupe 2 - EIDD 2A SIE");
+        out.println("==========================================");
     }
 
     public int readInt() {
@@ -47,7 +59,7 @@ public class CLI {
         while (v.isEmpty()) {
             print(prompt);
             v = scanner.nextLine().trim();
-            if (v.isEmpty()) { error("Ce champ ne peut pas etre vide."); v = ""; }
+            if (v.isEmpty())           { error("Ce champ ne peut pas etre vide."); v = ""; }
             else if (!v.contains("@")) { error("Email invalide. Doit contenir '@'."); v = ""; }
         }
         return v;
