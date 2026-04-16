@@ -8,67 +8,65 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CLITest {
 
-    private CLI cli(String input) {
-        return new CLI(new Scanner(input));
+
+    private static final class CliWithOutput {
+        final CLI cli;
+        final ByteArrayOutputStream buf;
+
+        CliWithOutput(String input) {
+            buf = new ByteArrayOutputStream();
+            cli = new CLI(new Scanner(input), new PrintStream(buf));
+        }
+
+        String output() { return buf.toString(); }
     }
 
-
+    // CLI sans capture (pour les tests de lecture seule)
+    private CLI cli(String input) {
+        return new CLI(new Scanner(input), new PrintStream(new ByteArrayOutputStream()));
+    }
 
     @Test
     void testPrint() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").print("bonjour");
-        assertTrue(out.toString().contains("bonjour"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.print("bonjour");
+        assertTrue(c.output().contains("bonjour"));
     }
 
     @Test
     void testOk() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").ok("succes");
-        assertTrue(out.toString().contains("OK succes"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.ok("succes");
+        assertTrue(c.output().contains("OK succes"));
     }
 
     @Test
     void testError() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").error("probleme");
-        assertTrue(out.toString().contains("ERREUR probleme"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.error("probleme");
+        assertTrue(c.output().contains("ERREUR probleme"));
     }
 
     @Test
     void testSep() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").sep();
-        assertTrue(out.toString().contains("---"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.sep();
+        assertTrue(c.output().contains("---"));
     }
 
     @Test
     void testTitle() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").title("MON TITRE");
-        assertTrue(out.toString().contains("MON TITRE"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.title("MON TITRE");
+        assertTrue(c.output().contains("MON TITRE"));
     }
 
     @Test
     void testBanner() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        cli("").banner();
-        assertTrue(out.toString().contains("QUIZ"));
-        System.setOut(System.out);
+        CliWithOutput c = new CliWithOutput("");
+        c.cli.banner();
+        assertTrue(c.output().contains("QUIZ"));
     }
-
-
 
     @Test
     void testReadIntValid() {
@@ -85,8 +83,6 @@ class CLITest {
         assertEquals(-5, cli("-5\n").readInt());
     }
 
-
-
     @Test
     void testReadIntBetweenValid() {
         assertEquals(2, cli("2\n").readIntBetween("Choix : ", 1, 3));
@@ -94,7 +90,6 @@ class CLITest {
 
     @Test
     void testReadIntBetweenRetryThenValid() {
-        // Premier essai invalide (0), deuxième valide (2)
         assertEquals(2, cli("0\n2\n").readIntBetween("", 1, 3));
     }
 
@@ -102,8 +97,6 @@ class CLITest {
     void testReadIntBetweenRetryText() {
         assertEquals(1, cli("abc\n1\n").readIntBetween("", 1, 2));
     }
-
-
 
     @Test
     void testReadStringValid() {
@@ -120,8 +113,6 @@ class CLITest {
         assertEquals("test", cli("test\n").readString(""));
     }
 
-    // ── readEmail ─────────────────────────────────────────────────────────────
-
     @Test
     void testReadEmailValid() {
         assertEquals("a@b.com", cli("a@b.com\n").readEmail("Email : "));
@@ -136,8 +127,6 @@ class CLITest {
     void testReadEmailEmptyThenValid() {
         assertEquals("a@b.com", cli("\na@b.com\n").readEmail("Email : "));
     }
-
-    // ── readBoolean ───────────────────────────────────────────────────────────
 
     @Test
     void testReadBooleanOui() {
