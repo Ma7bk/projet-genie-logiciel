@@ -17,10 +17,9 @@ import fr.uparis.projet_genie_logiciel.service.TeacherService;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,11 +32,12 @@ class AppTest {
     }
 
     private MainMenu buildMenu(String input) {
-        InMemoryTeacherRepository teacherRepository   = new InMemoryTeacherRepository();
-        InMemoryStudentRepository studentRepository   = new InMemoryStudentRepository();
-        InMemoryQuizRepository    quizRepository      = new InMemoryQuizRepository();
+        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
+        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
+        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
         InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
         AppContext ctx = new AppContext();
+
         return new MainMenu(
             cli(input),
             new TeacherService(teacherRepository),
@@ -49,22 +49,22 @@ class AppTest {
         );
     }
 
-
     private String captureOutput(Runnable action) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
-        try (PrintStream ps = new PrintStream(out)) {
-            System.setOut(ps);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        try (PrintStream tempOut = new PrintStream(output)) {
+            System.setOut(tempOut);
             action.run();
         } finally {
             System.setOut(originalOut);
         }
-        return out.toString();
+
+        return output.toString();
     }
 
-
-    private void deleteIfExists(String path) throws IOException {
-        Files.deleteIfExists(Paths.get(path));
+    private void deleteFile(String path) throws Exception {
+        Files.deleteIfExists(Path.of(path));
     }
 
     @Test
@@ -104,22 +104,31 @@ class AppTest {
     }
 
     @Test
-    void testPersistenceLoadSave() throws IOException {
+    void testPersistenceLoadSave() throws Exception {
         DataStore store = new DataStore();
         AppContext ctx = new AppContext();
-        InMemoryTeacherRepository  tr = new InMemoryTeacherRepository();
-        InMemoryStudentRepository  sr = new InMemoryStudentRepository();
-        InMemoryQuizRepository     qr = new InMemoryQuizRepository();
-        InMemoryQuestionRepository qu = new InMemoryQuestionRepository();
-        PersistenceManager pm = new PersistenceManager(store, tr, sr, qr, qu, ctx);
-        pm.load();
-        pm.save();
-        deleteIfExists(store.getTeachersFile());
-        deleteIfExists(store.getStudentsFile());
-        deleteIfExists(store.getQuizzesFile());
-        deleteIfExists(store.getQuestionsFile());
-        deleteIfExists(store.getScoresFile());
-        deleteIfExists(store.getCountersFile());
+        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
+        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
+        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
+        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
+        PersistenceManager persistenceManager = new PersistenceManager(
+            store,
+            teacherRepository,
+            studentRepository,
+            quizRepository,
+            questionRepository,
+            ctx
+        );
+
+        persistenceManager.load();
+        persistenceManager.save();
+
+        deleteFile(store.getTeachersFile());
+        deleteFile(store.getStudentsFile());
+        deleteFile(store.getQuizzesFile());
+        deleteFile(store.getQuestionsFile());
+        deleteFile(store.getScoresFile());
+        deleteFile(store.getCountersFile());
     }
 
     @Test
