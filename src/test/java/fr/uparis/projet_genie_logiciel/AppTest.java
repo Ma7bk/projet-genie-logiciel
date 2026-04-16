@@ -1,17 +1,28 @@
 package fr.uparis.projet_genie_logiciel;
 
-import fr.uparis.projet_genie_logiciel.entity.*;
-import fr.uparis.projet_genie_logiciel.persistence.*;
+import fr.uparis.projet_genie_logiciel.persistence.AppContext;
+import fr.uparis.projet_genie_logiciel.persistence.DataStore;
+import fr.uparis.projet_genie_logiciel.persistence.PersistenceManager;
 import fr.uparis.projet_genie_logiciel.presentation.CLI;
 import fr.uparis.projet_genie_logiciel.presentation.MainMenu;
-import fr.uparis.projet_genie_logiciel.repository.*;
-import fr.uparis.projet_genie_logiciel.service.*;
+import fr.uparis.projet_genie_logiciel.repository.InMemoryQuestionRepository;
+import fr.uparis.projet_genie_logiciel.repository.InMemoryQuizRepository;
+import fr.uparis.projet_genie_logiciel.repository.InMemoryStudentRepository;
+import fr.uparis.projet_genie_logiciel.repository.InMemoryTeacherRepository;
+import fr.uparis.projet_genie_logiciel.service.AuthService;
+import fr.uparis.projet_genie_logiciel.service.QuestionService;
+import fr.uparis.projet_genie_logiciel.service.QuizService;
+import fr.uparis.projet_genie_logiciel.service.StudentService;
+import fr.uparis.projet_genie_logiciel.service.TeacherService;
 import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Scanner;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppTest {
 
@@ -20,106 +31,111 @@ class AppTest {
     }
 
     private MainMenu buildMenu(String input) {
-        InMemoryTeacherRepository tr = new InMemoryTeacherRepository();
-        InMemoryStudentRepository sr = new InMemoryStudentRepository();
-        InMemoryQuizRepository    qr = new InMemoryQuizRepository();
-        InMemoryQuestionRepository qu = new InMemoryQuestionRepository();
+        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
+        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
+        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
+        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
         AppContext ctx = new AppContext();
+
         return new MainMenu(
             cli(input),
-            new TeacherService(tr),
-            new StudentService(sr),
-            new QuizService(qr, qu),
-            new QuestionService(qu),
-            new AuthService(tr, sr),
+            new TeacherService(teacherRepository),
+            new StudentService(studentRepository),
+            new QuizService(quizRepository, questionRepository),
+            new QuestionService(questionRepository),
+            new AuthService(teacherRepository, studentRepository),
             ctx
         );
     }
 
+    private String captureOutput(Runnable action) {
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            System.setOut(new PrintStream(out));
+            action.run();
+        } finally {
+            System.setOut(originalOut);
+        }
+        return out.toString();
+    }
+
+    private void deleteFile(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            assertTrue(file.delete(), "Impossible de supprimer : " + path);
+        }
+    }
+
     @Test
     void testMainMenuQuitter() {
-        // Option 0 = quitter immédiatement
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("Au revoir"));
+        String output = captureOutput(() -> buildMenu("0\n").run());
+        assertTrue(output.contains("Au revoir"));
     }
 
     @Test
     void testMainMenuOptionInvalide() {
-        // Option invalide puis quitter
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("99\n0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("invalide"));
+        String output = captureOutput(() -> buildMenu("99\n0\n").run());
+        assertTrue(output.toLowerCase().contains("invalide"));
     }
 
     @Test
     void testMainMenuEspaceEnseignantRetour() {
-        // Espace enseignant → retour → quitter
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("1\n0\n0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("ESPACE ENSEIGNANT"));
+        String output = captureOutput(() -> buildMenu("1\n0\n0\n").run());
+        assertTrue(output.contains("ESPACE ENSEIGNANT"));
     }
 
     @Test
     void testMainMenuEspaceEtudiantRetour() {
-        // Espace étudiant → retour → quitter
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("2\n0\n0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("ESPACE ETUDIANT"));
+        String output = captureOutput(() -> buildMenu("2\n0\n0\n").run());
+        assertTrue(output.contains("ESPACE ETUDIANT"));
     }
 
     @Test
     void testMainMenuLoginTeacherWrong() {
-        // Espace enseignant → se connecter → mauvais mdp → retour
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("1\n1\nbad@email.com\nwrongpwd\n0\n0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("incorrect"));
+        String output = captureOutput(() -> buildMenu("1\n1\nbad@email.com\nwrongpwd\n0\n0\n").run());
+        assertTrue(output.toLowerCase().contains("incorrect"));
     }
 
     @Test
     void testMainMenuLoginStudentWrong() {
-        // Espace étudiant → se connecter → mauvais mdp → retour
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(out));
-        buildMenu("2\n1\nbad@email.com\nwrongpwd\n0\n0\n").run();
-        System.setOut(System.out);
-        assertTrue(out.toString().contains("incorrect"));
+        String output = captureOutput(() -> buildMenu("2\n1\nbad@email.com\nwrongpwd\n0\n0\n").run());
+        assertTrue(output.toLowerCase().contains("incorrect"));
     }
 
     @Test
     void testPersistenceLoadSave() {
         DataStore store = new DataStore();
         AppContext ctx = new AppContext();
-        InMemoryTeacherRepository tr = new InMemoryTeacherRepository();
-        InMemoryStudentRepository sr = new InMemoryStudentRepository();
-        InMemoryQuizRepository qr = new InMemoryQuizRepository();
-        InMemoryQuestionRepository qu = new InMemoryQuestionRepository();
-        PersistenceManager pm = new PersistenceManager(store, tr, sr, qr, qu, ctx);
-        pm.load();
-        pm.save();
-        new File(store.getTeachersFile()).delete();
-        new File(store.getStudentsFile()).delete();
-        new File(store.getQuizzesFile()).delete();
-        new File(store.getQuestionsFile()).delete();
-        new File(store.getScoresFile()).delete();
-        new File(store.getCountersFile()).delete();
-        assertTrue(true);
+        InMemoryTeacherRepository teacherRepository = new InMemoryTeacherRepository();
+        InMemoryStudentRepository studentRepository = new InMemoryStudentRepository();
+        InMemoryQuizRepository quizRepository = new InMemoryQuizRepository();
+        InMemoryQuestionRepository questionRepository = new InMemoryQuestionRepository();
+        PersistenceManager persistenceManager = new PersistenceManager(
+            store,
+            teacherRepository,
+            studentRepository,
+            quizRepository,
+            questionRepository,
+            ctx
+        );
+
+        persistenceManager.load();
+        persistenceManager.save();
+
+        deleteFile(store.getTeachersFile());
+        deleteFile(store.getStudentsFile());
+        deleteFile(store.getQuizzesFile());
+        deleteFile(store.getQuestionsFile());
+        deleteFile(store.getScoresFile());
+        deleteFile(store.getCountersFile());
     }
 
     @Test
     void testMainMenuDescription() {
-        // Vérifie que MainMenu est dans le bon package
-        assertEquals("fr.uparis.projet_genie_logiciel.presentation.MainMenu",
-            MainMenu.class.getName());
+        assertEquals(
+            "fr.uparis.projet_genie_logiciel.presentation.MainMenu",
+            MainMenu.class.getName()
+        );
     }
 }

@@ -11,11 +11,7 @@ import fr.uparis.projet_genie_logiciel.service.QuizService;
 import fr.uparis.projet_genie_logiciel.service.StudentService;
 import fr.uparis.projet_genie_logiciel.service.TeacherService;
 
-/**
- * Gère la navigation principale de l'application CLI.
- * Responsabilité : construire et afficher les menus de la couche présentation.
- * App.java délègue entièrement le flux à cette classe.
- */
+
 public class MainMenu {
 
     private final CLI cli;
@@ -42,7 +38,7 @@ public class MainMenu {
         this.ctx             = ctx;
     }
 
-    /** Lance la boucle principale du menu. */
+
     public void run() {
         cli.banner();
         boolean running = true;
@@ -64,7 +60,7 @@ public class MainMenu {
         cli.print("\nAu revoir ! Donnees sauvegardees.");
     }
 
-    // ── Espace Enseignant ─────────────────────────────────────────────────
+
 
     private void runTeacherSpace() {
         Menu spaceMenu = new Menu("ESPACE ENSEIGNANT", cli);
@@ -99,7 +95,7 @@ public class MainMenu {
         };
     }
 
-    // ── Espace Etudiant ───────────────────────────────────────────────────
+
 
     private void runStudentSpace() {
         Menu spaceMenu = new Menu("ESPACE ETUDIANT", cli);
